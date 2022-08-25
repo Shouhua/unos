@@ -1,3 +1,5 @@
 *.o
 bochslog.txt
-os.iso
+*.iso
+kernel.elf
+com1.out

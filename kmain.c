@@ -1,5 +1,6 @@
 #include "io.h"
 #include "framebuffer.h"
+#include "serial.h"
 
 extern void disable_blink();
 extern void enable_blink();
@@ -9,6 +10,7 @@ int main() {
 	// disable_blink();
 	// fb_write_cell(0, 'A', FB_GREEN, FB_DARK_GREY);
 	// fb_write_cell(1, 'B', FB_GREEN, FB_DARK_GREY);
+	serial_write("No. 5 is alive!", 15);
 	fb_write("No. 5 is alive");
     // unsigned int pos = 0;
     // unsigned int i = 0;

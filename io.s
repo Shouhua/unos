@@ -1,4 +1,5 @@
 global outb ; make the label outb visible outside this file
+global inb
 
 ; outb - send a byte to an I/O port
 ; stack: [esp + 8] the data byte
@@ -9,3 +10,8 @@ outb:
     mov dx, [esp + 4] ; move the address of the I/O port into the dx register
     out dx, al        ; send the data to the I/O port
     ret               ; return to the calling function
+
+inb:
+    mov dx, [esp + 4]
+    in al, dx
+    ret
