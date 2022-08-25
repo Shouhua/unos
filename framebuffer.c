@@ -1,12 +1,5 @@
 #include "io.h"
-
-/* The I/O ports */
-#define FB_COMMAND_PORT        0x3D4
-#define FB_DATA_PORT           0x3D5
-
-/* The I/O port commands */
-#define FB_HIGH_BYTE_COMMAND   14
-#define FB_LOW_BYTE_COMMAND    15
+#include "framebuffer.h"
 
 /* fb_move_cursor
  * Move the cursor of the framebuffer to the given position
@@ -30,11 +23,21 @@ void fb_move_cursor(unsigned short pos)
  *  @param fg The foreground color
  *  @param bg The background color
  */
-void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg)
+void fb_write_cell(short i, char c, unsigned char fg, unsigned char bg)
 {
     char *fb = (char *)0x000B8000;
-    fb[i] = c;
-    fb[i+1] = ((fg & 0x0f) << 4) | (bg & 0x0f);
+    fb[i*2] = c;
+    fb[i*2 + 1] = ((bg & 0x0f) << 4) | (fg & 0x0f);
 }
 
-
+void fb_write(char *buf) {
+    unsigned int pos = 0;
+    unsigned int i = 0;
+    while(buf[i] != '\0') {
+        fb_write_cell(pos++, buf[i++], FB_WHITE, FB_BLACK);
+    }
+    // for(i = 0; i < len; ++i) {
+    //     fb_write_cell(pos++, buf[i], FB_WHITE, FB_BLACK);
+    // }
+    fb_move_cursor(i);
+}
