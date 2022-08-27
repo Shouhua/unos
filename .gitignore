@@ -1,5 +1,7 @@
 *.o
-bochslog.txt
 *.iso
+*.beam
+*.sym
+bochslog.txt
 kernel.elf
 com1.out

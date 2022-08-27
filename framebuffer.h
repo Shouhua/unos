@@ -41,6 +41,8 @@
 
 void fb_write_cell(short i, char c, unsigned char fg, unsigned char bg);
 void fb_move_cursor(unsigned short pos);
-void fb_write(char *buf);
+void fb_write(char *buf, unsigned int len);
+void fb_clear();
+void fb_write_str(char *buf);
 
 #endif

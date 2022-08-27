@@ -2,10 +2,10 @@ global loader
 
 ; %define debug xchg bx, bx
 
-section .text:
+section .text
 loader:
-    mov eax, 0xCAFEBABE
-    mov esp, kernel_stack + KERNEL_STACK_SIZE
+    ; mov eax, 0xCAFEBABE
+    ; mov esp, kernel_stack + KERNEL_STACK_SIZE
     ; push byte 0x08
     ; push byte 0x02
     ; push byte 0x41
@@ -13,11 +13,12 @@ loader:
     ; call fb_write_cell
 
     ; debug
-    call main
+    push ebx
+    call kernel
 .loop:
     jmp .loop
 
-extern main
+extern kernel
 
 KERNEL_STACK_SIZE equ 4096
 
