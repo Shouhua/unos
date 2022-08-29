@@ -23,6 +23,8 @@ void kernel(multiboot_info_t *info) {
 	itoa(info->flags, flags, 16);
 	fb_write(flags, strlen(flags));
 
+	printf("\nHelle, world!\n");
+
 	asm volatile ("int $0x3");
   asm volatile ("int $0x4");
     // unsigned int pos = 0;
