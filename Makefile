@@ -1,6 +1,6 @@
 OBJECTS = multiboot.o resetblink.o framebuffer.o loader.o kernel.o \
 					io.o serial.o string.o interrupt.o \
-					descriptor_tables.o dt.o isr.o
+					descriptor_tables.o dt.o isr.o timer.o apic.o
 CC = gcc
 # CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
 # 		 -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c

@@ -4,6 +4,7 @@
 #include "string.h"
 #include "multiboot.h"
 #include "descriptor_tables.h"
+#include "timer.h"
 
 extern void disable_blink();
 extern void enable_blink();
@@ -13,7 +14,6 @@ void kernel(multiboot_info_t *info) {
 	// disable_blink();
 	// fb_write_cell(0, 'A', FB_GREEN, FB_DARK_GREY);
 	// fb_write_cell(1, 'B', FB_GREEN, FB_DARK_GREY);
-	init_descriptor_tables();
 	fb_clear();
 	char greeting[] = "No. 5 is alive!\n";
 	fb_write(greeting, strlen(greeting));
@@ -23,10 +23,17 @@ void kernel(multiboot_info_t *info) {
 	itoa(info->flags, flags, 16);
 	fb_write(flags, strlen(flags));
 
-	printf("\nHelle, world!\n");
+	printf("multiboot header flags: %x\n", info->flags);
+
+  init_descriptor_tables();
+
+  printf("Generating random interrupts...\n");
 
 	asm volatile ("int $0x3");
   asm volatile ("int $0x4");
+
+	//init_timer(19); // 19HZ, setting frequency divsior
+  init_keyboard();
     // unsigned int pos = 0;
     // unsigned int i = 0;
 		// unsigned short len = 15;
