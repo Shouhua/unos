@@ -5,3 +5,6 @@
 bochslog.txt
 kernel.elf
 com1.out
+bx_enh_dbg.ini
+**/a.out
+.vscode

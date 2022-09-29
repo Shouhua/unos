@@ -4,7 +4,9 @@ ENTRY(loader)
 
 SECTIONS {
 
-    .multiboot ALIGN (0x1000): { multiboot.o }
+    .multiboot ALIGN (0x1000): { 
+        multiboot2.o 
+    }
 
     .text ALIGN (0x1000) :
     {

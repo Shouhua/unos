@@ -1,6 +1,6 @@
 global loader
 
-; %define debug xchg bx, bx
+%define debug xchg bx, bx
 
 section .text
 loader:
@@ -12,8 +12,8 @@ loader:
     ; push dword 320
     ; call fb_write_cell
 
-    ; debug
     push ebx
+    push eax
     call kernel
 .loop:
     jmp .loop
