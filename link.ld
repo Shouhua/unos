@@ -26,4 +26,5 @@ SECTIONS {
         *(COMMON)
         *(.bss)
     }
+    end = .; _end = .; __end = .;
 }

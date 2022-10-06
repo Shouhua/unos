@@ -19,11 +19,13 @@
 #define IRQ14 46
 #define IRQ15 47
 
-typedef struct registers {
-  uint32_t ds; // data segment
-  uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // pushed by pusha
-  uint32_t int_no, err_code; // interrupt number & error code
-  uint32_t eip, cs, eflags, usereap, ss; // pushed by processor
+#include "types.h"
+typedef struct registers
+{
+	u32 ds;										// data segment
+	u32 edi, esi, ebp, esp, ebx, edx, ecx, eax; // pushed by pusha
+	u32 int_no, err_code;						// interrupt number & error code
+	u32 eip, cs, eflags, usereap, ss;			// pushed by processor
 } registers_t;
 
 // Enables registration of callbacks for interrupts or IRQs.
@@ -33,6 +35,6 @@ typedef void (*isr_t)(registers_t);
 
 void ack_irq(int int_no);
 
-void register_interrupt_handler(uint8_t n, isr_t handler);
+void register_interrupt_handler(u8 n, isr_t handler);
 
 #endif

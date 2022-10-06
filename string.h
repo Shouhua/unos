@@ -1,13 +1,14 @@
-#ifndef _STRING_H_
-#define _STRING_H_
+#ifndef __STRING_H__
+#define __STRING_H__
 
-#include <stddef.h>
-#include <stdint.h>
+#include "types.h"
 
-char *itoa(int val, char *buf, int radix);
-char *uitoa(uint32_t val, char *buf, int radix);
+char *itoa(int val, char *buf, u32 radix);
+char *uitoa(u32 val, char *buf, u32 radix);
 size_t strlen(const char *buf);
+int printf(const char *format, ...);
+
 void *memset(void *s, int c, size_t n);
 void *memmove(void *dst, const void *src, size_t len);
-int printf(const char *format, ...);
-#endif /* _STRING_H_ */
+
+#endif

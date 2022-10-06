@@ -1,12 +1,13 @@
 OBJECTS = multiboot2.o resetblink.o framebuffer.o loader.o kernel.o \
-					io.o serial.o string.o \
-					# interrupt.o descriptor_tables.o dt.o isr.o timer.o apic.o
+					io.o serial.o string.o interrupt.o descriptor_tables.o dt.o isr.o timer.o keyboard.o kheap.o paging.o\
+					# apic.o
 CC = gcc
 # CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
 # 		 -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c
-CFLAGS = -m32 -fno-stack-protector \
+CFLAGS := -m32 -fno-stack-protector \
 					-ffreestanding \
 					-Wall -Wextra -Werror -g -c
+CFLAGS += -DDEBUG=4
 # things you may or may not need -nostdinc -fno-builtin -nostdlib -nostartfiles -nodefaultlibs
 # see http://forum.osdev.org/viewtopic.php?f=1&t=25585
 LDFLAGS = -T link.ld -melf_i386

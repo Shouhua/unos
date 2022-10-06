@@ -12,3 +12,6 @@ info breakpoints
 print 0x7fffffffdde8 # p 0x7fffffffdde8
 x/16xb 0x7fffffffdde8
 ```
+## gdb + vscode
+Debug Console
+-exec display/8xw $sp
