@@ -113,7 +113,8 @@ void init_paging()
 {
 	// The size of physical memory. For the moment we
 	// assume it is 16MB big.
-	u32 mem_end_page = 0x1000000;
+	// u32 mem_end_page = 0x1000000;
+	u32 mem_end_page = 0x500000;
 	// u32 mem_end_page = 0x1ee8000 - (1024 * 1024);
 
 	nframes = mem_end_page / 0x1000;
@@ -122,6 +123,7 @@ void init_paging()
 
 	// Let's make a page directory.
 	kernel_directory = (page_directory_t *)kmalloc_a(sizeof(page_directory_t));
+	memset(kernel_directory, 0, sizeof(page_directory_t));
 	current_directory = kernel_directory;
 
 	// We need to identity map (phys addr = virt addr) from
@@ -170,6 +172,7 @@ page_t *get_page(u32 address, int make, page_directory_t *dir)
 	{
 		u32 tmp;
 		dir->tables[table_idx] = (page_table_t *)kmalloc_ap(sizeof(page_table_t), &tmp);
+		memset(dir->tables[table_idx], 0, 0x1000);
 		dir->tablesPhysical[table_idx] = tmp | 0x7; // PRESENT, RW, US.
 		return &dir->tables[table_idx]->pages[address % 1024];
 	}
@@ -181,39 +184,37 @@ page_t *get_page(u32 address, int make, page_directory_t *dir)
 
 void page_fault(registers_t regs)
 {
-	printf("page fault %d\n", regs.err_code);
-	PANIC("Page fault");
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.
-	// u32 faulting_address;
-	// asm volatile("mov %%cr2, %0"
-	// 			 : "=r"(faulting_address));
+	u32 faulting_address;
+	asm volatile("mov %%cr2, %0"
+				 : "=r"(faulting_address));
 
-	// // The error code gives us details of what happened.
-	// int present = !(regs.err_code & 0x1); // Page not present
-	// int rw = regs.err_code & 0x2;		  // Write operation?
-	// int us = regs.err_code & 0x4;		  // Processor was in user-mode?
-	// int reserved = regs.err_code & 0x8;	  // Overwritten CPU-reserved bits of page entry?
-	// // int id = regs.err_code & 0x10;		  // Caused by an instruction fetch?
+	// The error code gives us details of what happened.
+	int present = !(regs.err_code & 0x1); // Page not present
+	int rw = regs.err_code & 0x2;		  // Write operation?
+	int us = regs.err_code & 0x4;		  // Processor was in user-mode?
+	int reserved = regs.err_code & 0x8;	  // Overwritten CPU-reserved bits of page entry?
+	// int id = regs.err_code & 0x10;		  // Caused by an instruction fetch?
 
-	// // Output an error message.
-	// printf("Page fault! ( ");
-	// if (present)
-	// {
-	// 	printf("present ");
-	// }
-	// if (rw)
-	// {
-	// 	printf("read-only ");
-	// }
-	// if (us)
-	// {
-	// 	printf("user-mode ");
-	// }
-	// if (reserved)
-	// {
-	// 	printf("reserved ");
-	// }
-	// printf(") at 0x%x\n", faulting_address);
-	// PANIC("Page fault");
+	// Output an error message.
+	printf("Page fault! ( ");
+	if (present)
+	{
+		printf("present ");
+	}
+	if (rw)
+	{
+		printf("read-only ");
+	}
+	if (us)
+	{
+		printf("user-mode ");
+	}
+	if (reserved)
+	{
+		printf("reserved ");
+	}
+	printf(") at 0x%x\n", faulting_address);
+	PANIC("Page fault");
 }
