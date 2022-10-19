@@ -1,4 +1,5 @@
 ## bochs
+### bochs stub
 bochs使用gdb-stub调试，需要编译下开启--enable-gdb-stub，**并且编译时这个选项跟--enable-debug是冲突的**
 ```shell
 # 使用debug模式
@@ -10,6 +11,10 @@ sudo make install
 sudo make uninstall
 make clean
 ```
+### bochs command line debug
+- disasm 0x7c00 0x7c16 反汇编区间的代码
+- x /nuf n count, u unit size, f print format
+```x /16wx 0x7c00```
 
 ## qemu
 ```
