@@ -4,6 +4,7 @@ vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
 megs: 32M
 
 floppya: 1_44=a.img, status=inserted
+display_library: sdl2
 
 log: OSDEV.log
 error: action=report

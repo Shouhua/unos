@@ -13,6 +13,11 @@ int 0x10/ah=0x0e
 al = character to write
 bh = page number(should be 0)
 bl = foreground color(graphics mode only)
+
+xor bx, bx
+mov ah, 0x0e
+mov al, 'H'
+int 0x10
 ```
 - reset floppy disk
 ```
