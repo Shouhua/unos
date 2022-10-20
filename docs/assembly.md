@@ -1,5 +1,7 @@
-- lodsb ds:si > al
-- stosb al > es:di
+[Intel Pentium Instruction](https://faydoc.tripod.com/cpu/)
+
+- lodsb ds:si > al (memory > registry)
+- stosb al > es:di (registry > memory)
 - cmpsb ds:si & es:di  
 ```
 MOV SI, STR1
@@ -10,4 +12,4 @@ CLD; Clear the direction flag
 REPE CMPSB
 ```
 - movsb ds:si > es:di
-- xchg 
+- xchg ax, cx

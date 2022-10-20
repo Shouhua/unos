@@ -2,10 +2,14 @@ org 0x10000
 bits 16
 
 entry:
+	mov ax, 0x1000
+	mov ds, ax
 	mov si, DisplayStr
 	call Print
-	cli
-	hlt
+
+	mov ah, 0
+	int 0x16                    ; await keypress
+	int 0x19                    ; warm boot computer
 
 Print:
 	push ax
@@ -24,4 +28,4 @@ PrintDone:
 	pop ax
 	ret
 
-DisplayStr: db "Hello, world!", 0x0d, 0x0a, 0
+DisplayStr: db "Stage2 Now...", 0x0d, 0x0a, 0

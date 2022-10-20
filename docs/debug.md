@@ -1,7 +1,31 @@
 ## bochs
-### bochs stub
-bochs使用gdb-stub调试，需要编译下开启--enable-gdb-stub，**并且编译时这个选项跟--enable-debug是冲突的**
+### [bochs command line debug](https://bochs.sourceforge.io/doc/docbook/user/internal-debugger.html)
+- disassembly
 ```shell
+disasm 0x7c00 0x7c16 
+# or
+u 0x7c00 0x7c80
+```
+- print memory content
+``` shell
+# x /nuf address (n count, u unit size, f print format)
+x /16wx 0x7c00 16个word
+x /20bx es:di 20个byte
+# print physical memeory
+xp /20bx es:di 20个byte 
+```
+- ```trace on``` 每走一步打印当前和下一步的汇编代码
+- information
+```shell
+# cpu registries and eflags 
+reg
+# segements
+sreg
+```
+
+### [bochs stub](https://bochs.sourceforge.io/doc/docbook/user/compiling.html)
+```shell
+# --enable-gdb-stub和--enable-debug冲突
 # 使用debug模式
 ./configure --enable-debugger --with-sdl2 --enable-usb-xhci --enable-raw-serial --enable-usb --enable-pcidev --enable-cdrom --enable-plugins --enable-debugger-gui --with-x11
 # 使用gdb-stub模式
@@ -11,11 +35,6 @@ sudo make install
 sudo make uninstall
 make clean
 ```
-### bochs command line debug
-- disasm 0x7c00 0x7c16 反汇编区间的代码
-- x /nuf n count, u unit size, f print format
-```x /16wx 0x7c00```
-
 ## qemu
 ```
 sudo apt install qemu
@@ -33,7 +52,7 @@ run
 break 10 # linenumber, function name
 info breakpoints
 print 0x7fffffffdde8 # p 0x7fffffffdde8
-x/16xb 0x7fffffffdde8
+x /16xb 0x7fffffffdde8
 ```
 
 ## gdb + vscode
