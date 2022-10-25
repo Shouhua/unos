@@ -58,3 +58,83 @@ x /16xb 0x7fffffffdde8
 ## gdb + vscode
 在vscode中调试时，可以在Debug Console中添加前缀-exec，然后跟上gdb调试命令
 ```-exec display/8xw $sp```
+
+```shell
+# 一个文件/home/username/project/folder/file.ext 在编辑器中打开
+# 一个目录/home/username/project 作为你的根目录
+${workspaceFolder} 当前工作根目录 /home/username/project
+${workspaceFolderBasename} 当前文件父目录 project
+${file} 当前打开的完整文件名 file.ext
+${relativeFile} 当前打开文件相对当前根目录的路径文件名 folder/file.ext
+${relativeFileDirname} 当前打开文件相对当前根目录的路径 folder
+${fileBasename} 当前打开的文件名 file.ext
+${fileBasenameNoExtension} 当前打开文件名不包括扩展 file
+${fileDirname} 当前打开文件的路径 /home/username/project/folder
+${fileExtname} 当前打开文件的扩展名 ext
+${cwd} 启动时task工作的目录
+${lineNumber} 光标所在行
+${selectedText} 编辑器中所选文本
+${execPath} code.exe所在目录路径
+${defaultBuildTask} 默认build task的名字
+```
+```json
+// task.json
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "C/C++: gcc build active file",
+			"command": "/usr/bin/gcc",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-m32",
+				"-g",
+				"${file}",
+				"-o",
+				"${fileDirname}/${fileBasenameNoExtension}.out"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: /usr/bin/gcc"
+		}
+	]
+}
+```
+```json
+// launch.json
+{
+	"name": "gcc - Build and debug active file",
+	"type": "cppdbg",
+	"request": "launch",
+	"program": "${fileDirname}/${fileBasenameNoExtension}.out",
+	"args": [],
+	"stopAtEntry": false,
+	"cwd": "${fileDirname}",
+	"environment": [],
+	"externalConsole": false,
+	"MIMode": "gdb",
+	"setupCommands": [
+			{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+			},
+			{
+					"description": "Set Disassembly Flavor to Intel",
+					"text": "-gdb-set disassembly-flavor intel",
+					"ignoreFailures": true
+			}
+	],
+	"preLaunchTask": "C/C++: gcc build active file",
+	"miDebuggerPath": "/usr/bin/gdb"
+}
+```

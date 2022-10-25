@@ -1,0 +1,10 @@
+romimage: file=$BXSHARE/BIOS-bochs-latest, address=0xfffe0000
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+
+megs: 32M
+
+floppya: 1_44=a.img, status=inserted
+
+log: OSDEV.log
+error: action=report
+info: action=report
