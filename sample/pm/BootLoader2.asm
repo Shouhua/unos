@@ -4,11 +4,12 @@ org 0x10000
 	jmp LABEL_BEGIN
 
 [section .gdt]
-; gdt
 LABEL_GDT:					Descriptor	0,								 0,	0
 LABEL_DESC_CODE32:	Descriptor  0,  SegCode32Len - 1, DA_C + DA_32	
 LABEL_DESC_VIDEO:		Descriptor	0xb8000,		  0xffff,	DA_DRW
 LABEL_DESC_LDT:			Descriptor	0,		  LDTLen - 1,	DA_LDT
+LABEL_DESC_CODE_DEST: Descriptor 0, SegCodeDestLen - 1, DA_C + DA_32
+LABEL_CALL_GATE_TEST: Gate SelectorCodeDest, 0, 0, DA_386CGate + DA_DPL0
 
 GdtLen	equ	$ - LABEL_GDT
 GdtPtr	dw	GdtLen - 1 ; 16 bits limit
@@ -18,6 +19,8 @@ GdtPtr	dw	GdtLen - 1 ; 16 bits limit
 SelectorCode32	equ	LABEL_DESC_CODE32 - LABEL_GDT
 SelectorVideo		equ LABEL_DESC_VIDEO  - LABEL_GDT
 SelectorLDT			equ LABEL_DESC_LDT		- LABEL_GDT
+SelectorCodeDest	equ LABEL_DESC_CODE_DEST - LABEL_GDT
+SelectorCallGateTest equ LABEL_CALL_GATE_TEST - LABEL_GDT
 
 [section .s16]
 [bits 16]
@@ -45,12 +48,21 @@ LABEL_BEGIN:
 	mov byte [LABEL_DESC_LDT + 4], al
 	mov byte [LABEL_DESC_LDT + 7], ah
 
+	;init ldt base address
 	xor eax, eax
 	mov eax, LABEL_CODE_A
 	mov word [LABEL_LDT_DESC_CODEA + 2], ax
 	shr eax, 16
 	mov byte [LABEL_LDT_DESC_CODEA + 4], al
 	mov byte [LABEL_LDT_DESC_CODEA + 7], ah
+
+	; init call gate descriptor base address
+	xor eax, eax
+	mov eax, LABEL_SEG_CODE_DEST
+	mov word [LABEL_DESC_CODE_DEST + 2], ax
+	shr eax, 16
+	mov byte [LABEL_DESC_CODE_DEST + 4], al
+	mov byte [LABEL_DESC_CODE_DEST + 7], ah
 
 	xor eax, eax
 	mov ax, ds
@@ -84,6 +96,8 @@ LABEL_SEG_CODE32:
 	mov al, 'P'
 	mov [gs:edi], ax
 
+	call SelectorCallGateTest:0
+
 	mov	ax, SelectorLDT
 	lldt ax
 
@@ -114,3 +128,16 @@ LABEL_CODE_A:
 	cli
 	hlt
 CodeALen	equ	$ - LABEL_CODE_A
+
+[section .sdest] ; 调用门目标段
+[bits 32]
+LABEL_SEG_CODE_DEST:
+	mov ax, SelectorVideo
+	mov gs, ax
+	mov edi, (80 * 13 + 0) * 2
+	mov ah, 0x0c
+	mov al, 'C'
+	mov [gs:edi], ax
+
+	retf
+SegCodeDestLen	equ	$ - LABEL_SEG_CODE_DEST

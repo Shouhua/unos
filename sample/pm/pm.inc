@@ -13,7 +13,8 @@
 				; For example, code in ring 3 can far-jump to conforming code in a ring 2 segment. 
 				; The DPL field represent the highest privilege level that is allowed to execute the segment. 
 					; For example, code in ring 0 cannot far-jump to a conforming code segment where DPL is 2, 
-						; while code in ring 2 and 3 can. Note that the privilege level remains the same, ie. a far-jump from ring 3 to a segment with a DPL of 2 remains in ring 3 after the jump.
+						; while code in ring 2 and 3 can. Note that the privilege level remains the same, 
+						;	ie. a far-jump from ring 3 to a segment with a DPL of 2 remains in ring 3 after the jump.
 ; RW: Readable bit/Writable bit.
 	; data: Writeable bit. If clear (0), write access for this segment is not allowed. If set (1) write access is allowed. Read access is always allowed for data segments.
 	; code: Readable bit. If clear (0), read access for this segment is not allowed. If set (1) read access is allowed. Write access is never allowed for code segments.
