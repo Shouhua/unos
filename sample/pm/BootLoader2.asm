@@ -8,6 +8,7 @@ org 0x10000
 LABEL_GDT:					Descriptor	0,								 0,	0
 LABEL_DESC_CODE32:	Descriptor  0,  SegCode32Len - 1, DA_C + DA_32	
 LABEL_DESC_VIDEO:		Descriptor	0xb8000,		  0xffff,	DA_DRW
+LABEL_DESC_LDT:			Descriptor	0,		  LDTLen - 1,	DA_LDT
 
 GdtLen	equ	$ - LABEL_GDT
 GdtPtr	dw	GdtLen - 1 ; 16 bits limit
@@ -16,17 +17,11 @@ GdtPtr	dw	GdtLen - 1 ; 16 bits limit
 ; selector
 SelectorCode32	equ	LABEL_DESC_CODE32 - LABEL_GDT
 SelectorVideo		equ LABEL_DESC_VIDEO  - LABEL_GDT
+SelectorLDT			equ LABEL_DESC_LDT		- LABEL_GDT
 
 [section .s16]
 [bits 16]
 LABEL_BEGIN:
-	; mov ax, cs
-	; mov ds, ax
-	; mov es, ax
-	; mov ss, ax
-	; mov sp, 0x100
-	; TODO: 查看ss/sp/bp变化
-
 	xor eax, eax
 	mov ax, cs
 
@@ -39,6 +34,23 @@ LABEL_BEGIN:
 	shr eax, 16
 	mov byte [LABEL_DESC_CODE32 + 4], al
 	mov byte [LABEL_DESC_CODE32 + 7], ah
+
+	; init LDT
+		; shl eax, 4
+	; add eax, LABEL_SEG_CODE32
+	xor eax, eax
+	mov eax, LABEL_LDT
+	mov word [LABEL_DESC_LDT + 2], ax
+	shr eax, 16
+	mov byte [LABEL_DESC_LDT + 4], al
+	mov byte [LABEL_DESC_LDT + 7], ah
+
+	xor eax, eax
+	mov eax, LABEL_CODE_A
+	mov word [LABEL_LDT_DESC_CODEA + 2], ax
+	shr eax, 16
+	mov byte [LABEL_LDT_DESC_CODEA + 4], al
+	mov byte [LABEL_LDT_DESC_CODEA + 7], ah
 
 	xor eax, eax
 	mov ax, ds
@@ -72,7 +84,33 @@ LABEL_SEG_CODE32:
 	mov al, 'P'
 	mov [gs:edi], ax
 
-	cli
-	hlt
+	mov	ax, SelectorLDT
+	lldt ax
+
+	jmp SelectorLDTCodeA:0
 
 SegCode32Len	equ	$ - LABEL_SEG_CODE32
+
+[section .ldt]
+align 32
+LABEL_LDT:
+LABEL_LDT_DESC_CODEA: Descriptor 0, CodeALen - 1, DA_C + DA_32
+LDTLen	equ	 $ - LABEL_LDT
+
+SelectorLDTCodeA equ LABEL_LDT_DESC_CODEA - LABEL_LDT + SA_TIL
+
+[section .la]
+align 32
+[bits 32]
+LABEL_CODE_A:
+	mov	ax, SelectorVideo
+	mov	gs, ax			; 视频段选择子(目的)
+
+	mov	edi, (80 * 12 + 0) * 2	; 屏幕第 10 行, 第 0 列。
+	mov	ah, 0Ch			; 0000: 黑底    1100: 红字
+	mov	al, 'L'
+	mov	[gs:edi], ax
+
+	cli
+	hlt
+CodeALen	equ	$ - LABEL_CODE_A
