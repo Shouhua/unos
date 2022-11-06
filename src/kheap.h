@@ -17,29 +17,29 @@
    parameter representations are available in kmalloc, kmalloc_a,
    kmalloc_ap, kmalloc_p.
 **/
-u32 kmalloc_init(u32 sz, int align, u32 *phys);
+uint32_t kmalloc_init(uint32_t sz, int align, uint32_t *phys);
 
 /**
    Allocate a chunk of memory, sz in size. The chunk must be
    page aligned.
 **/
-u32 kmalloc_a(u32 sz);
+uint32_t kmalloc_a(uint32_t sz);
 
 /**
    Allocate a chunk of memory, sz in size. The physical address
-   is returned in phys. Phys MUST be a valid pointer to u32!
+   is returned in phys. Phys MUST be a valid pointer to uint32_t!
 **/
-u32 kmalloc_p(u32 sz, u32 *phys);
+uint32_t kmalloc_p(uint32_t sz, uint32_t *phys);
 
 /**
    Allocate a chunk of memory, sz in size. The physical address
    is returned in phys. It must be page-aligned.
 **/
-u32 kmalloc_ap(u32 sz, u32 *phys);
+uint32_t kmalloc_ap(uint32_t sz, uint32_t *phys);
 
 /**
    General allocation function.
 **/
-u32 kmalloc(u32 sz);
+uint32_t kmalloc(uint32_t sz);
 
 #endif // KHEAP_H

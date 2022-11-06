@@ -9,8 +9,8 @@
 #define FB_WIDTH 80
 #define FB_HEIGHT 25
 
-static u32 fb_pos_x = 0;
-static u32 fb_pos_y = 0;
+static uint32_t fb_pos_x = 0;
+static uint32_t fb_pos_y = 0;
 
 static unsigned char fg = FB_WHITE;
 static unsigned char bg = FB_BLACK;
@@ -41,7 +41,7 @@ void fb_write_cell(short i, char c)
 	fb[i * 2 + 1] = ((bg & 0x0f) << 4) | (fg & 0x0f);
 }
 
-void fb_move_cursor(u16 pos)
+void fb_move_cursor(uint16_t pos)
 {
 	outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
 	outb(FB_DATA_PORT, ((pos >> 8) & 0x00FF));
@@ -49,9 +49,9 @@ void fb_move_cursor(u16 pos)
 	outb(FB_DATA_PORT, pos & 0x00FF);
 }
 
-void fb_write(char *buf, u32 len)
+void fb_write(char *buf, uint32_t len)
 {
-	u32 i;
+	uint32_t i;
 	for (i = 0; i < len; i++)
 	{
 		char c = buf[i];
@@ -61,7 +61,7 @@ void fb_write(char *buf, u32 len)
 
 void fb_write_str(char *buf)
 {
-	u32 i = 0;
+	uint32_t i = 0;
 	while (buf[i] != 0)
 	{
 		char c = buf[i];
@@ -72,7 +72,7 @@ void fb_write_str(char *buf)
 
 void fb_write_char(char c)
 {
-	u16 pos;
+	uint16_t pos;
 	if (c == '\n' || c == '\r')
 	{
 		fb_pos_y++;

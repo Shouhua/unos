@@ -19,30 +19,30 @@
 	; data: Writeable bit. If clear (0), write access for this segment is not allowed. If set (1) write access is allowed. Read access is always allowed for data segments.
 	; code: Readable bit. If clear (0), read access for this segment is not allowed. If set (1) read access is allowed. Write access is never allowed for code segments.
 ; A: Accessed bit. Best left clear (0), the CPU will set it when the segment is accessed.
-	; u8 type : 4; // 36 - 39: segment type - code segment
-	; u8 dt : 1;	 // 40: descriptor type, 1 code/data, 0 system gate/tss etc
-	; u8 dpl : 2;	 // 41 - 42: descriptor privilege level - Ring 0 - 3
-	; u8 p : 1;	 // 43: is segment present? (1=yes)
+	; uint8_t type : 4; // 36 - 39: segment type - code segment
+	; uint8_t dt : 1;	 // 40: descriptor type, 1 code/data, 0 system gate/tss etc
+	; uint8_t dpl : 2;	 // 41 - 42: descriptor privilege level - Ring 0 - 3
+	; uint8_t p : 1;	 // 43: is segment present? (1=yes)
 ; } _packed;
 ; typedef struct gdt_access gdt_access_t;
 ; 
 ; struct gdt_entry
 ; {
-	; u16 limit_low : 16;	 // 0 - 15
-	; u32 base_low : 24;	 // 16 - 35
+	; uint16_t limit_low : 16;	 // 0 - 15
+	; uint32_t base_low : 24;	 // 16 - 35
 	; gdt_access_t access; // 36 - 43
-	; u8 limit_high : 4;	 // 44 - 46
-	; u8 a : 1;			 // 47: available for system use, must be 0
-	; u8 unused : 1;		 // 48: must be 0
-	; u8 d : 1;			 // 49: operand size (0 = 16 bit, 1 = 32 bit)
-	; u8 g : 1;			 // 50: granularity (0 = 1 Byte, 1 = 1KiB)
-	; u8 base_high : 8;	 // 51 - 58
+	; uint8_t limit_high : 4;	 // 44 - 46
+	; uint8_t a : 1;			 // 47: available for system use, must be 0
+	; uint8_t unused : 1;		 // 48: must be 0
+	; uint8_t d : 1;			 // 49: operand size (0 = 16 bit, 1 = 32 bit)
+	; uint8_t g : 1;			 // 50: granularity (0 = 1 Byte, 1 = 1KiB)
+	; uint8_t base_high : 8;	 // 51 - 58
 ; } _packed;
 ; typedef struct gdt_entry gdt_entry_t;
 ; 
 ; struct gdt_ptr
 ; {
-	; u16 limit; 
+	; uint16_t limit; 
 	; gdt_entry_t *base; ; 32bits
 ; } _packed;
 ; */

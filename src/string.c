@@ -1,10 +1,10 @@
 #include "types.h"
 #include "framebuffer.h"
 
-char *itoa(int val, char *buf, int radix)
+char *itoa(int32_t val, char *buf, int radix)
 {
-	u32 i = 0;
-	u32 start = i;
+	uint32_t i = 0;
+	uint32_t start = i;
 	if (val < 0 && radix == 10)
 	{
 		buf[i++] = '-';
@@ -17,8 +17,9 @@ char *itoa(int val, char *buf, int radix)
 	// 	buf[i++] = 'x';
 	// 	start = i;
 	// }
+	
 
-	int x = val;
+	int32_t x = val;
 	do
 	{
 		int a = x % radix;
@@ -44,10 +45,10 @@ char *itoa(int val, char *buf, int radix)
 	return buf;
 }
 
-char *uitoa(u32 val, char *buf, int radix)
+char *uitoa(uint32_t val, char *buf, int radix)
 {
-	u32 i = 0;
-	u32 start = i;
+	uint32_t i = 0;
+	uint32_t start = i;
 
 	if (radix == 16)
 	{
@@ -56,10 +57,10 @@ char *uitoa(u32 val, char *buf, int radix)
 		start = i;
 	}
 
-	u32 x = val;
+	uint32_t x = val;
 	do
 	{
-		u32 a = x % radix;
+		uint32_t a = x % radix;
 		if (a < 10)
 			buf[i++] = a + '0';
 		else
@@ -99,7 +100,7 @@ void *memset(void *s, int c, size_t n)
 	size_t i;
 	for (i = 0; i < n; i++)
 	{
-		mem[i] = (u8)c;
+		mem[i] = (uint8_t)c;
 	}
 	return s;
 }
@@ -150,7 +151,7 @@ int printf(const char *format, ...)
 			case 'i':
 			case 'u':
 			case 'x':
-				itoa(*((int *)arg++), buf, c == 'x' ? 16 : 10);
+				itoa(*((int64_t *)arg++), buf, c == 'x' ? 16 : 10);
 				p = buf;
 				goto string;
 				break;

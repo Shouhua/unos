@@ -9,10 +9,17 @@
 #define RESERVED_TOKEN(x, y) CONCAT(x, y)
 #define RESERVED RESERVED_TOKEN(reserved, __LINE__)
 
+// 参考标准库stdbool.h
 #ifndef __cplusplus
-#define bool _Bool
+/*
+ * Only defined for C, since C++ has its own bool support
+ * */
+/** Expands to the integer constant 1. */
 #define true 1
+/** Expands to the integer constant 0. */
 #define false 0
+/** Expands to _Bool. */
+typedef _Bool bool;
 #endif
 
 // 用于定义特殊的结构体
@@ -20,28 +27,29 @@
 
 // 用于省略函数的栈帧
 #define _ofp __attribute__((optimize("omit-frame-pointer")))
-
 #define _inline __attribute__((always_inline)) inline
 
-typedef unsigned int size_t;
+// 使用32bits方式定义，类型参考标准库stdint.h
+typedef unsigned long size_t;
+typedef long ssize_t;
 
-typedef char int8;
-typedef short int16;
-typedef int int32;
-typedef long long int64;
+typedef char int8_t; // default signed char
+typedef short int16_t;
+typedef int int32_t;
+typedef long long int64_t;
 
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
 
-typedef int32 pid_t;
-typedef int32 dev_t;
+typedef int32_t pid_t;
+typedef int32_t dev_t;
 
-typedef u32 time_t;
-typedef u32 idx_t;
+typedef uint32_t time_t;
+typedef uint32_t idx_t;
 
-typedef int32 fd_t;
+typedef int32_t fd_t;
 typedef enum std_fd_t
 {
     stdin,

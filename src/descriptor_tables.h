@@ -11,30 +11,30 @@
 
 struct gdt_access
 {
-	u8 type : 4; // 36 - 39: segment type - code segment
-	u8 dt : 1;	 // 40: descriptor type
-	u8 dpl : 2;	 // 41 - 42: descriptor privilege level - Ring 0 - 3
-	u8 p : 1;	 // 43: is segment present? (1=yes)
+	uint8_t type : 4; // 36 - 39: segment type - code segment
+	uint8_t dt : 1;	 // 40: descriptor type
+	uint8_t dpl : 2;	 // 41 - 42: descriptor privilege level - Ring 0 - 3
+	uint8_t p : 1;	 // 43: is segment present? (1=yes)
 } _packed;
 typedef struct gdt_access gdt_access_t;
 
 struct gdt_entry
 {
-	u16 limit_low : 16;	 // 0 - 15
-	u32 base_low : 24;	 // 16 - 35
+	uint16_t limit_low : 16;	 // 0 - 15
+	uint32_t base_low : 24;	 // 16 - 35
 	gdt_access_t access; // 36 - 43
-	u8 limit_high : 4;	 // 44 - 46
-	u8 a : 1;			 // 47: available for system use, must be 0
-	u8 unused : 1;		 // 48: must be 0
-	u8 d : 1;			 // 49: operand size (0 = 16 bit, 1 = 32 bit)
-	u8 g : 1;			 // 50: granularity (0 = 1 Byte, 1 = 1KiB)
-	u8 base_high : 8;	 // 51 - 58
+	uint8_t limit_high : 4;	 // 44 - 46
+	uint8_t a : 1;			 // 47: available for system use, must be 0
+	uint8_t unused : 1;		 // 48: must be 0
+	uint8_t d : 1;			 // 49: operand size (0 = 16 bit, 1 = 32 bit)
+	uint8_t g : 1;			 // 50: granularity (0 = 1 Byte, 1 = 1KiB)
+	uint8_t base_high : 8;	 // 51 - 58
 } _packed;
 typedef struct gdt_entry gdt_entry_t;
 
 struct gdt_ptr
 {
-	u16 limit;
+	uint16_t limit;
 	gdt_entry_t *base;
 } _packed;
 typedef struct gdt_ptr gdt_ptr_t;
@@ -47,27 +47,27 @@ void init_descriptor_tables();
 
 struct idt_flags
 {
-	u8 gate_type : 3; // 0 - 2, task, interrupt,
-	u8 d : 1;		  // 3, gate size
-	u8 zero : 1;	  // 4, value=0
-	u8 dpl : 2;		  // 5 - 6, descriptor privilege level
-	u8 p : 1;		  // 7, segment present
+	uint8_t gate_type : 3; // 0 - 2, task, interrupt,
+	uint8_t d : 1;		  // 3, gate size
+	uint8_t zero : 1;	  // 4, value=0
+	uint8_t dpl : 2;		  // 5 - 6, descriptor privilege level
+	uint8_t p : 1;		  // 7, segment present
 } _packed;
 typedef struct idt_flags idt_flags_t;
 
 struct idt_entry
 {
-	u16 base_low; // aka offset
-	u16 segment_selector;
-	u8 reserved; // always zero
+	uint16_t base_low; // aka offset
+	uint16_t segment_selector;
+	uint8_t reserved; // always zero
 	idt_flags_t flags;
-	u16 base_high; // aka offset
+	uint16_t base_high; // aka offset
 } _packed;
 typedef struct idt_entry idt_entry_t;
 
 struct idt_ptr
 {
-	u16 limit;
+	uint16_t limit;
 	idt_entry_t *base; // aka offset
 } _packed;
 typedef struct idt_ptr idt_ptr_t;

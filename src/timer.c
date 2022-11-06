@@ -14,7 +14,7 @@
 
 #define PIT_REPEAT 0x36
 
-u32 tick = 0;
+uint32_t tick = 0;
 
 static void timer_cb(registers_t regs)
 {
@@ -23,17 +23,17 @@ static void timer_cb(registers_t regs)
 	printf("h/w interrupt: %i\n", regs.int_no);
 }
 
-void init_timer(u32 frequency)
+void init_timer(uint32_t frequency)
 {
 	printf("initializing timer.\n");
 	register_interrupt_handler(IRQ0, &timer_cb);
 
-	u32 divisor = PIT_TIMER_MAX_HZ / frequency;
+	uint32_t divisor = PIT_TIMER_MAX_HZ / frequency;
 
 	outb(PIT_COMMAND_PORT, PIT_REPEAT);
 
-	u8 low = divisor & 0xff;
-	u8 high = (divisor >> 8) & 0xff;
+	uint8_t low = divisor & 0xff;
+	uint8_t high = (divisor >> 8) & 0xff;
 
 	outb(PIT_DATA_PORT0, low);
 	outb(PIT_DATA_PORT0, high);

@@ -3,6 +3,6 @@
 
 #include "types.h"
 // returns lower 32-bits written to MSR register
-u32 disable_apic();
+uint32_t disable_apic();
 
 #endif

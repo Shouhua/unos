@@ -9,10 +9,10 @@
 #include "keyboard.h"
 #include "paging.h"
 
-void print_boot_info(u32 magic_number, u32 addr)
+void print_boot_info(uint32_t magic_number, uint32_t addr)
 {
 	struct multiboot_tag *tag;
-	u32 size;
+	uint32_t size;
 	if (magic_number == MULTIBOOT2_BOOTLOADER_MAGIC)
 	{
 		printf("magic number is right: 0x%x\n", magic_number);
@@ -26,7 +26,7 @@ void print_boot_info(u32 magic_number, u32 addr)
 		printf("Unaligned mbi: 0x%x\n", addr);
 		return;
 	}
-	size = *(u32 *)addr;
+	size = *(uint32_t *)addr;
 	printf("Announced mbi size 0x%x\n", size);
 	for (tag = (struct multiboot_tag *)(addr + 8);
 		 tag->type != MULTIBOOT_TAG_TYPE_END;
@@ -68,7 +68,7 @@ void print_boot_info(u32 magic_number, u32 addr)
 
 			for (mmap = ((struct multiboot_tag_mmap *)tag)->entries;
 				 (multiboot_uint8_t *)mmap < (multiboot_uint8_t *)tag + tag->size;
-				 mmap = (multiboot_memory_map_t *)((u32)mmap + ((struct multiboot_tag_mmap *)tag)->entry_size))
+				 mmap = (multiboot_memory_map_t *)((uint32_t)mmap + ((struct multiboot_tag_mmap *)tag)->entry_size))
 				printf(" base_addr = 0x%x%x,"
 					   " length = 0x%x%x, type = 0x%x\n",
 					   (unsigned)(mmap->addr >> 32),
@@ -83,7 +83,7 @@ void print_boot_info(u32 magic_number, u32 addr)
 			// 	multiboot_uint32_t color;
 			// 	unsigned i;
 			// 	struct multiboot_tag_framebuffer *tagfb = (struct multiboot_tag_framebuffer *)tag;
-			// 	void *fb = (void *)(u32)tagfb->common.framebuffer_addr;
+			// 	void *fb = (void *)(uint32_t)tagfb->common.framebuffer_addr;
 
 			// 	switch (tagfb->common.framebuffer_type)
 			// 	{
@@ -176,12 +176,17 @@ void test_write_cell()
 	// printf("hello, world\n");
 }
 
-// void kernel(u32 magic_number, u32 addr)
-void kernel()
+#ifdef PRINT_MULTIBOOT_INFO
+	void kernel(uint32_t magic_number, uint32_t addr)
+#else
+	void kernel()
+#endif
 {
 	fb_clear();
 
-	// print_boot_info(magic_number, addr);
+	#ifdef PRINT_MULTIBOOT_INFO
+		print_boot_info(magic_number, addr);
+	#endif
 
 	init_descriptor_tables();
 
@@ -193,10 +198,10 @@ void kernel()
 	// // init_timer(19); // 19HZ, setting frequency divsior
 	// init_keyboard();
 
-	init_paging();
-	printf("init paging over now...");
-	u32 *ptr = (u32 *)0xA0000000;
-	u32 do_page_fault = *ptr;
-	printf("%x\n", do_page_fault);
+	// init_paging();
+	// printf("init paging over now...");
+	// uint32_t *ptr = (uint32_t *)0xA0000000;
+	// uint32_t do_page_fault = *ptr;
+	// printf("%x\n", do_page_fault);
 	return;
 }

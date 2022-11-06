@@ -240,7 +240,7 @@ static void keyboard_cb()
 	// itoa(scan, buf, 10);
 	// fb_write_str(buf);
 
-	u8 ext = 2; // keymap 状态索引，默认没有 shift 键
+	uint8_t ext = 2; // keymap 状态索引，默认没有 shift 键
 
 	// 是扩展码字节
 	if (scancode == 0xe0)
@@ -264,7 +264,7 @@ static void keyboard_cb()
 	}
 
 	// 获得通码
-	u16 makecode = (scancode & 0x7f);
+	uint16_t makecode = (scancode & 0x7f);
 	if (makecode == CODE_PRINT_SCREEN_DOWN)
 	{
 		makecode = KEY_PRINT_SCREEN;

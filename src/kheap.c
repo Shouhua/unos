@@ -6,10 +6,10 @@
 #include "kheap.h"
 
 // end is defined in the linker script.
-extern u32 end; // 0x107ca4
-u32 placement_address = (u32)&end;
+extern uint32_t end; // 0x107ca4
+uint32_t placement_address = (uint32_t)&end;
 
-u32 kmalloc_init(u32 sz, int align, u32 *phys)
+uint32_t kmalloc_init(uint32_t sz, int align, uint32_t *phys)
 {
 	// This will eventually call malloc() on the kernel heap.
 	// For now, though, we just assign memory at placement_address
@@ -25,27 +25,27 @@ u32 kmalloc_init(u32 sz, int align, u32 *phys)
 	{
 		*phys = placement_address;
 	}
-	u32 tmp = placement_address;
+	uint32_t tmp = placement_address;
 	placement_address += sz;
 	return tmp;
 }
 
-u32 kmalloc_a(u32 sz)
+uint32_t kmalloc_a(uint32_t sz)
 {
 	return kmalloc_init(sz, 1, 0);
 }
 
-u32 kmalloc_p(u32 sz, u32 *phys)
+uint32_t kmalloc_p(uint32_t sz, uint32_t *phys)
 {
 	return kmalloc_init(sz, 0, phys);
 }
 
-u32 kmalloc_ap(u32 sz, u32 *phys)
+uint32_t kmalloc_ap(uint32_t sz, uint32_t *phys)
 {
 	return kmalloc_init(sz, 1, phys);
 }
 
-u32 kmalloc(u32 sz)
+uint32_t kmalloc(uint32_t sz)
 {
 	return kmalloc_init(sz, 0, 0);
 }

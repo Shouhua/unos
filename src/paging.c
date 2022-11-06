@@ -13,47 +13,47 @@ page_directory_t *kernel_directory = 0;
 page_directory_t *current_directory = 0;
 
 // A bitset of frames - used or free.
-u32 *frames;
-u32 nframes;
+uint32_t *frames;
+uint32_t nframes;
 
 // Defined in kheap.c
-extern u32 placement_address;
+extern uint32_t placement_address;
 
 // Macros used in the bitset algorithms.
 #define INDEX_FROM_BIT(a) (a / (8 * 4))
 #define OFFSET_FROM_BIT(a) (a % (8 * 4))
 
 // Static function to set a bit in the frames bitset
-static void set_frame(u32 frame_addr)
+static void set_frame(uint32_t frame_addr)
 {
-	u32 frame = frame_addr / 0x1000;
-	u32 idx = INDEX_FROM_BIT(frame);
-	u32 off = OFFSET_FROM_BIT(frame);
+	uint32_t frame = frame_addr / 0x1000;
+	uint32_t idx = INDEX_FROM_BIT(frame);
+	uint32_t off = OFFSET_FROM_BIT(frame);
 	frames[idx] |= (0x1 << off);
 }
 
 // Static function to clear a bit in the frames bitset
-static void clear_frame(u32 frame_addr)
+static void clear_frame(uint32_t frame_addr)
 {
-	u32 frame = frame_addr / 0x1000;
-	u32 idx = INDEX_FROM_BIT(frame);
-	u32 off = OFFSET_FROM_BIT(frame);
+	uint32_t frame = frame_addr / 0x1000;
+	uint32_t idx = INDEX_FROM_BIT(frame);
+	uint32_t off = OFFSET_FROM_BIT(frame);
 	frames[idx] &= ~(0x1 << off);
 }
 
 // Static function to test if a bit is set.
-// static u32 test_frame(u32 frame_addr)
+// static uint32_t test_frame(uint32_t frame_addr)
 // {
-// 	u32 frame = frame_addr / 0x1000;
-// 	u32 idx = INDEX_FROM_BIT(frame);
-// 	u32 off = OFFSET_FROM_BIT(frame);
+// 	uint32_t frame = frame_addr / 0x1000;
+// 	uint32_t idx = INDEX_FROM_BIT(frame);
+// 	uint32_t off = OFFSET_FROM_BIT(frame);
 // 	return (frames[idx] & (0x1 << off));
 // }
 
 // Static function to find the first free frame.
-static u32 first_frame()
+static uint32_t first_frame()
 {
-	u32 i, j;
+	uint32_t i, j;
 	for (i = 0; i < INDEX_FROM_BIT(nframes); i++)
 	{
 		if (frames[i] != 0xFFFFFFFF) // nothing free, exit early.
@@ -61,7 +61,7 @@ static u32 first_frame()
 			// at least one bit is free here.
 			for (j = 0; j < 32; j++)
 			{
-				u32 toTest = 0x1 << j;
+				uint32_t toTest = 0x1 << j;
 				if (!(frames[i] & toTest))
 				{
 					return i * 4 * 8 + j;
@@ -81,8 +81,8 @@ void alloc_frame(page_t *page, int is_kernel, int is_writeable)
 	}
 	else
 	{
-		u32 idx = first_frame();
-		if (idx == (u32)-1)
+		uint32_t idx = first_frame();
+		if (idx == (uint32_t)-1)
 		{
 			// PANIC! no free frames!!
 		}
@@ -97,7 +97,7 @@ void alloc_frame(page_t *page, int is_kernel, int is_writeable)
 // Function to deallocate a frame.
 void free_frame(page_t *page)
 {
-	u32 frame;
+	uint32_t frame;
 	if (!(frame = page->frame))
 	{
 		return;
@@ -113,12 +113,12 @@ void init_paging()
 {
 	// The size of physical memory. For the moment we
 	// assume it is 16MB big.
-	// u32 mem_end_page = 0x1000000;
-	u32 mem_end_page = 0x500000;
-	// u32 mem_end_page = 0x1ee8000 - (1024 * 1024);
+	// uint32_t mem_end_page = 0x1000000;
+	uint32_t mem_end_page = 0x500000;
+	// uint32_t mem_end_page = 0x1ee8000 - (1024 * 1024);
 
 	nframes = mem_end_page / 0x1000;
-	frames = (u32 *)kmalloc(INDEX_FROM_BIT(nframes));
+	frames = (uint32_t *)kmalloc(INDEX_FROM_BIT(nframes));
 	memset(frames, 0, INDEX_FROM_BIT(nframes));
 
 	// Let's make a page directory.
@@ -151,26 +151,26 @@ void switch_page_directory(page_directory_t *dir)
 {
 	current_directory = dir;
 	asm volatile("mov %0, %%cr3" ::"r"(&dir->tablesPhysical));
-	u32 cr0;
+	uint32_t cr0;
 	asm volatile("mov %%cr0, %0"
 				 : "=r"(cr0));
 	cr0 |= 0x80000000; // Enable paging!
 	asm volatile("mov %0, %%cr0" ::"r"(cr0));
 }
 
-page_t *get_page(u32 address, int make, page_directory_t *dir)
+page_t *get_page(uint32_t address, int make, page_directory_t *dir)
 {
 	// Turn the address into an index.
 	address /= 0x1000;
 	// Find the page table containing this address.
-	u32 table_idx = address / 1024;
+	uint32_t table_idx = address / 1024;
 	if (dir->tables[table_idx]) // If this table is already assigned
 	{
 		return &dir->tables[table_idx]->pages[address % 1024];
 	}
 	else if (make)
 	{
-		u32 tmp;
+		uint32_t tmp;
 		dir->tables[table_idx] = (page_table_t *)kmalloc_ap(sizeof(page_table_t), &tmp);
 		memset(dir->tables[table_idx], 0, 0x1000);
 		dir->tablesPhysical[table_idx] = tmp | 0x7; // PRESENT, RW, US.
@@ -186,7 +186,7 @@ void page_fault(registers_t regs)
 {
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.
-	u32 faulting_address;
+	uint32_t faulting_address;
 	asm volatile("mov %%cr2, %0"
 				 : "=r"(faulting_address));
 

@@ -1,10 +1,12 @@
-## general x86 real mode memory map
+## [general x86 real mode memory map](https://wiki.osdev.org/Memory_Map_(x86))
 ```
+start        end        description
 0x00000000 - 0x000003ff real mode interrupt vector table
 0x00000400 - 0x000004ff BIOS data area
 0x00000500 - 0x00007bff unused
 0x00007c00 - 0x00007dff our bootloader
-0x00007e00 - 0x0003ffff unused
+0x00007e00 - 0x0007ffff unused
+0x00080000 - 0x0009ffff EBDA(Extended BIOS Data Area)
 0x000a0000 - 0x000bffff video ram(vram) memory
 0x000b0000 - 0x000b7777 monochrome video memory
 0x000b8000 - 0x000bffff color video memory

@@ -3,8 +3,8 @@
 
 #include "types.h"
 
-char *itoa(int val, char *buf, u32 radix);
-char *uitoa(u32 val, char *buf, u32 radix);
+char *itoa(int val, char *buf, uint32_t radix);
+char *uitoa(uint32_t val, char *buf, uint32_t radix);
 size_t strlen(const char *buf);
 int printf(const char *format, ...);
 

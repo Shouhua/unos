@@ -7,12 +7,19 @@
 ```shell
 # read elf header information
 readelf -h [object/execute file] 
+
 # read elf section header information
 readelf -S [object/execute file] 
+
 # read elf symbol table information
 readelf -s [object/execute file] 
-# read secton content
-readelf -p .shstrtab [object/execute file]
+
+# display section content
+readelf -x .text [object/execute file]
+
+# string dump section
+readelf -p .data [object/execute file]
+
 # read program header
 readelf -l [execute file]
 ```
@@ -30,5 +37,5 @@ objdump -s
 # list all symbols
 objdump -t 
 # display information only for secion
-objdump -j .rodata 
+objdump -s -j .rodata [object/execute file]
 ```

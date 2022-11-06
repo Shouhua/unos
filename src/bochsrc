@@ -3,19 +3,19 @@
 ###############################################################
 
 # how much memory the emulated machine will have
-megs: 32
+megs: 4G
 
 # filename of ROM images
-#romimage: file=$BXSHARE/BIOS-bochs-latest
-#vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
-romimage: file=/usr/local/share/bochs/BIOS-bochs-latest
-vgaromimage: file=/usr/local/share/bochs/VGABIOS-lgpl-latest
+romimage: file=$BXSHARE/BIOS-bochs-latest
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+#romimage: file=/usr/local/share/bochs/BIOS-bochs-latest
+#vgaromimage: file=/usr/local/share/bochs/VGABIOS-lgpl-latest
 #
 # what disk images will be used
-# floppya: 1_44=a.img, status=inserted
+#floppya: 1_44=a.img, status=inserted
 
 # choose the boot disk.
-# boot: floppy
+#boot: floppy
 
 ata0-master: type=cdrom,path=unos.iso, status=inserted
 boot: cdrom
@@ -31,8 +31,8 @@ log: bochslog.txt
 clock: sync=realtime, time0=local
 cpu: count=1, ips=1000000
 #display_library: win32, options="gui_debug" # use Win32 debugger gui
-#display_library: sdl2, options="gui_debug"
-display_library: x
+# display_library: sdl2, options="gui_debug"
+display_library: sdl2
 magic_break: enabled=1
 com1: enabled=1, mode=file, dev=com1.out
 #gdbstub: enabled=1, port=1234, text_base=0, data_base=0, bss_base=0

@@ -1,3 +1,32 @@
+## qemu
+```bash
+# ubuntu中qemu是一个空包(dummy pakcage)
+sudo apt install qemu-system-x86
+```
+```bash
+BUILD_DIR := build
+QEMU_MON_PORT := 55555
+
+all:
+	mkdir -p $(BUILD_DIR)
+	nasm -f elf -o $(BUILD_DIR)/kernel.o loader.s
+	ld -T link.ld -melf_i386 $(BUILD_DIR)/kernel.o -o iso/boot/kernel.bin
+	grub-mkrescue -o $(BUILD_DIR)/os.iso iso
+	bochs -q
+
+debug:
+	@nasm -f elf -g -o $(BUILD_DIR)/kernel.o loader.s
+	@ld -T link.ld -melf_i386 $(BUILD_DIR)/kernel.o -o ${BUILD_DIR}/kernel.bin
+	@cp ${BUILD_DIR}/kernel.bin iso/boot/
+	@grub-mkrescue -o $(BUILD_DIR)/os.iso iso
+	@i686-elf-objcopy --only-keep-debug ${BUILD_DIR}/kernel.bin ${BUILD_DIR}/kernel.debug
+	@qemu-system-i386 -s -S -cdrom $(BUILD_DIR)/os.iso -monitor telnet::$(QEMU_MON_PORT),server,nowait &
+	@sleep 1
+	@gnome-terminal -- "telnet 127.0.0.1 $(QEMU_MON_PORT)"
+	@gdb -s $(BUILD_DIR)/kernel.bin -ex "target remote localhost:1234"
+	#@gdb -s $(BUILD_DIR)/kernel.debug -ex "target remote localhost:1234"
+```
+
 ## bochs
 ### [bochs command line debug](https://bochs.sourceforge.io/doc/docbook/user/internal-debugger.html)
 - disassembly
@@ -35,11 +64,6 @@ sudo make install
 sudo make uninstall
 make clean
 ```
-## qemu
-```
-sudo apt install qemu
-```
-
 ## gdb
 gdb中使用“x”命令来打印内存的值，格式为“x/nfu addr”。含义为以f格式打印从addr开始的n个长度单元为u的内存值。参数具体含义如下：
 a）n：输出单元的个数。

@@ -8,6 +8,9 @@ CFLAGS := -m32 -fno-stack-protector \
 					-ffreestanding \
 					-Wall -Wextra -Werror -g -c
 CFLAGS += -DDEBUG=4
+
+CFLAGS += -DPRINT_MULTIBOOT_INFO
+
 # things you may or may not need -nostdinc -fno-builtin -nostdlib -nostartfiles -nodefaultlibs
 # see http://forum.osdev.org/viewtopic.php?f=1&t=25585
 LDFLAGS = -T link.ld -melf_i386
@@ -17,11 +20,11 @@ ASFLAGS = -f elf
 all: unos.iso
 
 unos.iso: kernel.elf
-	cp kernel.elf iso/boot/kernel.elf
+	cp kernel.elf ../iso/boot/kernel.elf
 	grub-file --is-x86-multiboot2 kernel.elf
 	# 0-ok, 1-fail
 	echo 'kernel.elf is whether multiboot2: $?'
-	grub-mkrescue -o unos.iso iso
+	grub-mkrescue -o unos.iso ../iso
 
 kernel.elf: $(OBJECTS)
 	ld $(LDFLAGS) $(OBJECTS) -o kernel.elf

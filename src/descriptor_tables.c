@@ -16,17 +16,17 @@ static void init_gdt();
 static void init_idt();
 
 static void gdt_set_gate(
-	int32 idx,
-	u32 base,
-	u32 limit,
+	int32_t idx,
+	uint32_t base,
+	uint32_t limit,
 	gdt_access_t access,
-	u8 d,
-	u8 g);
+	uint8_t d,
+	uint8_t g);
 
 static void idt_set_gate(
-	u8 idx,
+	uint8_t idx,
 	void(*base),
-	u16 selector,
+	uint16_t selector,
 	idt_flags_t flags);
 
 gdt_entry_t gdt_entries[5];
@@ -149,12 +149,12 @@ static void init_gdt()
 }
 
 static void gdt_set_gate(
-	int32 idx,
-	u32 base,
-	u32 limit,
+	int32_t idx,
+	uint32_t base,
+	uint32_t limit,
 	gdt_access_t access,
-	u8 d,
-	u8 g)
+	uint8_t d,
+	uint8_t g)
 {
 
 	gdt_entries[idx] = (struct gdt_entry){
@@ -212,16 +212,16 @@ static void gdt_set_gate(
 #define ICW4_BUF_MASTER 0x0C /* Buffered mode/master */
 #define ICW4_SFNM 0x10		 /* Special fully nested (not) */
 
-// const u32 CPUID_FLAG_MSR = 1 << 5;
+// const uint32_t CPUID_FLAG_MSR = 1 << 5;
 
 // bool cpuHasMSR()
 // {
-// 	u32 a, b, c, d; // eax, (ebx, ecx,) edx
+// 	uint32_t a, b, c, d; // eax, (ebx, ecx,) edx
 // 	__get_cpuid(1, &a, &b, &c, &d);
 // 	return d & CPUID_FLAG_MSR;
 // }
 
-// void cpuGetMSR(u32 msr, u32 *lo, u32 *hi)
+// void cpuGetMSR(uint32_t msr, uint32_t *lo, uint32_t *hi)
 // {
 // 	asm volatile("rdmsr"
 // 				 : "=a"(*lo), "=d"(*hi)
@@ -250,7 +250,7 @@ static inline void io_wait()
 }
 
 // from http://wiki.osdev.org/8259_PIC
-static void PIC_remap(u8 offset1, u8 offset2)
+static void PIC_remap(uint8_t offset1, uint8_t offset2)
 {
 	unsigned char a1, a2;
 
@@ -283,7 +283,7 @@ static void init_idt()
 {
 	// printf("cpuHasMSR=%i\n", cpuHasMSR());
 	// printf("Disabling APIC...\n");
-	// u32 msr = disable_apic();
+	// uint32_t msr = disable_apic();
 	// printf("MSR 0x1b=%x\n", msr);
 
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
@@ -371,15 +371,15 @@ static void init_idt()
 }
 
 static void idt_set_gate(
-	u8 idx,
+	uint8_t idx,
 	void(*base),
-	u16 selector,
+	uint16_t selector,
 	idt_flags_t flags)
 {
 
 	idt_entries[idx] = (struct idt_entry){
-		.base_low = (u32)base & 0xffff,
-		.base_high = ((u32)base >> 16) & 0xffff,
+		.base_low = (uint32_t)base & 0xffff,
+		.base_high = ((uint32_t)base >> 16) & 0xffff,
 		.segment_selector = selector,
 		.flags = flags};
 }

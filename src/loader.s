@@ -12,6 +12,8 @@ loader:
     ; push dword 320
     ; call fb_write_cell
 
+    ; debug
+
     push ebx
     push eax
     call kernel

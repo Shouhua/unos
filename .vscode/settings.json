@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"*.json": "jsonc",
+		"cstdint": "c",
+		"framebuffer.h": "c",
+		"stdint.h": "c"
+	}
+}
