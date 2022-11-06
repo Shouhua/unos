@@ -10,7 +10,7 @@ static uint32_t fb_pos_y = 0;
 
 static uint8_t fg = FB_WHITE;
 static uint8_t bg = FB_BLACK;
-static uint8_t framebuffer_addr = 0x000B8000;
+static uint8_t *framebuffer_addr = (uint8_t *)0x000B8000;
 
 void fb_set_buffer(uint8_t *addr) 
 {

@@ -10,6 +10,8 @@ OS_NAME := unos
 OS_BIN = $(OS_NAME).bin
 OS_ISO = $(OS_NAME).iso
 
+QEMU_MON_PORT := 55555
+
 CC := i686-elf-gcc
 CFLAGS := -m32 -fno-stack-protector \
 					-ffreestanding \
@@ -45,21 +47,30 @@ $(BUILD_DIR)/$(OS_ISO): $(ISO_DIR) $(BIN_DIR)/$(OS_BIN)
 	@cp $(BIN_DIR)/$(OS_BIN) $(ISO_BOOT_DIR)
 	@grub-mkrescue -o $(BUILD_DIR)/$(OS_ISO) $(ISO_DIR)
 
-.PHONY: all bochs clean
-all: clean $(BUILD_DIR)/$(OS_ISO)
-
-bochs: all
-	bochs -q -f bochs.cfg
-
 $(OBJECT_DIR)/%.c.o : %.c
 	@mkdir -p $(@D)
 	@echo " BUILD: $<"
-	$(CC) $(INCLUDES) -c $< -o $@ $(CFLAGS)
+	@$(CC) $(INCLUDES) -c $< -o $@ $(CFLAGS)
 
 $(OBJECT_DIR)/%.s.o : %.s
 	@mkdir -p $(@D)
 	@echo " BUILD: $<"
-	$(AS) $(ASFLAGS) $< -o $@
+	@$(AS) $(ASFLAGS) $< -o $@
+
+.PHONY: all bochs clean
+all: clean $(BUILD_DIR)/$(OS_ISO)
+
+bochs: all
+	@bochs -q -f bochs.cfg
+
+qemu: all
+	qemu-system-i386 -cdrom $(BUILD_DIR)/$(OS_ISO) -m 32M
+
+qemu-debug: all
+	@qemu-system-i386 -s -S -cdrom $(BUILD_DIR)/$(OS_ISO) -monitor telnet::$(QEMU_MON_PORT),server,nowait &
+	@sleep 1
+	@gnome-terminal -- bash -c "telnet 127.0.0.1 $(QEMU_MON_PORT)"
+	@gdb -s $(BIN_DIR)/$(OS_BIN) -ex "target remote localhost:1234"
 
 clean:
 	@rm -rf $(BUILD_DIR)
