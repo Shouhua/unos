@@ -12,8 +12,13 @@ OS_ISO = $(OS_NAME).iso
 
 QEMU_MON_PORT := 55555
 
-# CC := i686-elf-gcc
-CC := gcc
+ifeq ($(shell lsb_release -si), Ubuntu)
+	CC := i686-elf-gcc
+	TERMINAL := gnome-terminal
+else
+	CC := gcc
+	TERMINAL := xfce4-terminal --hold
+endif
 CFLAGS := -m32 -fno-stack-protector \
 					-ffreestanding \
 					-Wall -Wextra -Werror -g
@@ -70,8 +75,7 @@ qemu: all
 qemu-debug: all
 	@qemu-system-i386 -s -S -cdrom $(BUILD_DIR)/$(OS_ISO) -monitor telnet::$(QEMU_MON_PORT),server,nowait &
 	@sleep 1
-	# @gnome-terminal -- bash -c "telnet 127.0.0.1 $(QEMU_MON_PORT)"
-	@xfce4-terminal --hold -e "telnet 127.0.0.1 $(QEMU_MON_PORT)"
+	@$(TERMINAL) -e "telnet 127.0.0.1 $(QEMU_MON_PORT)"
 	@gdb -s $(BIN_DIR)/$(OS_BIN) -ex "target remote localhost:1234"
 
 clean:

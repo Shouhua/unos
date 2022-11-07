@@ -50,12 +50,12 @@ char *uitoa(uint32_t val, char *buf, int radix)
 	uint32_t i = 0;
 	uint32_t start = i;
 
-	if (radix == 16)
-	{
-		buf[i++] = '0';
-		buf[i++] = 'x';
-		start = i;
-	}
+	// if (radix == 16)
+	// {
+	// 	buf[i++] = '0';
+	// 	buf[i++] = 'x';
+	// 	start = i;
+	// }
 
 	uint32_t x = val;
 	do
@@ -150,8 +150,12 @@ int printf(const char *format, ...)
 			case 'd':
 			case 'i':
 			case 'u':
+				itoa(*((uint32_t *)arg++), buf, 10);
+				p = buf;
+				goto string;
+				break;
 			case 'x':
-				itoa(*((int64_t *)arg++), buf, c == 'x' ? 16 : 10);
+				uitoa(*((uint32_t *)arg++), buf, 16);
 				p = buf;
 				goto string;
 				break;
