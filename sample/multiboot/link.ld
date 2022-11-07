@@ -5,6 +5,7 @@ SECTIONS {
 
     .text ALIGN (0x1000) :
     {
+        __kernel_start = .;
         *(.multiboot)
         *(.text)             /* all text sections from all files */
     }
@@ -24,5 +25,5 @@ SECTIONS {
     {
         *(.data)             /* all data sections from all files */
     }
-    end = .;
+    __kernel_end = ALIGN(.);
 }

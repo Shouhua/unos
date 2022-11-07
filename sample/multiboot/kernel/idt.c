@@ -1,173 +1,6 @@
-// (very loosely) based on code from: http://www.jamesmolloy.co.uk/tutorial_html/4.-The%20GDT%20and%20IDT.html
-// and also: http://www.jamesmolloy.co.uk/tutorial_html/5.-IRQs%20and%20the%20PIT.html
-// #include <cpuid.h>
-
-#include "types.h"
-#include "string.h"
-#include "descriptor_tables.h"
-#include "io.h"
-#include "apic.h"
-
-// Internal use only
-extern void gdt_flush(gdt_ptr_t *);
-extern void idt_flush(idt_ptr_t *);
-
-static void init_gdt();
-static void init_idt();
-
-static void gdt_set_gate(
-	int32_t idx,
-	uint32_t base,
-	uint32_t limit,
-	gdt_access_t access,
-	uint8_t d,
-	uint8_t g);
-
-static void idt_set_gate(
-	uint8_t idx,
-	void(*base),
-	uint16_t selector,
-	idt_flags_t flags);
-
-gdt_entry_t gdt_entries[5];
-gdt_ptr_t gdt_ptr;
-idt_entry_t idt_entries[256];
-idt_ptr_t idt_ptr;
-
-void init_descriptor_tables()
-{
-	init_gdt();
-	init_idt();
-}
-
-#define GDT_ACCESS_TYPE_CODE 10
-
-// Granularity Field (1 bit)
-#define GDT_GRANULARITY_BYTE 0
-#define GDT_GRANULARITY_4KILOBYTE 1
-
-// D Field (1 bit) - defines operand size for code segments
-#define GDT_DEFAULT_OPERAND_SIZE_16 0
-#define GDT_DEFAULT_OPERAND_SIZE_32 1
-
-// DPL Field (2 bits)
-#define GDT_DPL_RING0 0
-#define GDT_DPL_RING1 1
-#define GDT_DPL_RING2 2
-#define GDT_DPL_RING3 3
-
-// Segment Type Field (4 bits)
-#define GDT_SEGMENT_TYPE_DATA 0
-#define GDT_SEGMENT_TYPE_CODE 0x8
-
-// Data Type
-// code: 1, confirming, readable(1 readable, 0 only execute), accessed(0)
-// code: 0, expand down, writable, accessed
-// E - expand direction
-#define GDT_SEGMENT_TYPE_EXPAND_UP 0
-#define GDT_SEGMENT_TYPE_EXPAND_DOWN 0x4
-
-// W - read/write
-#define GDT_SEGMENT_TYPE_READ_ONLY 0
-#define GDT_SEGMENT_TYPE_READ_WRITE 0x2
-
-// Code Type
-// C - non/confirming
-#define GDT_SEGMENT_TYPE_NONCONFORMING 0
-#define GDT_SEGMENT_TYPE_CONFORMING 0x4
-
-// R - execute/read
-#define GDT_SEGMENT_TYPE_EXECUTE_ONLY 0
-#define GDT_SEGMENT_TYPE_EXECUTE_READ 0x2
-
-// A - accessed
-#define GDT_SEGMENT_TYPE_RESET_ACCESSED 0
-
-// Segment Present (p) - segment present in memory?
-#define GDT_SEGMENT_NOT_PRESENT 0
-#define GDT_SEGMENT_PRESENT 1
-
-// Descriptor Type (S)
-#define GDT_SEGMENT_DT_SYSTEM 0
-#define GDT_SEGMENT_DT_CODE 1
-
-static void init_gdt()
-{
-	gdt_ptr.limit = sizeof(gdt_entry_t) * 5 - 1;
-	gdt_ptr.base = gdt_entries;
-
-	gdt_set_gate(0, 0, 0, (struct gdt_access){0, 0, 0, 0}, 0, 0);
-	gdt_set_gate(
-		1, // index
-		0, 0xffffffff,
-		(struct gdt_access){
-			.type = GDT_SEGMENT_TYPE_CODE | GDT_SEGMENT_TYPE_EXECUTE_READ,
-			.dt = GDT_SEGMENT_DT_CODE,
-			.dpl = GDT_DPL_RING0,
-			.p = GDT_SEGMENT_PRESENT}, // access
-		GDT_DEFAULT_OPERAND_SIZE_32,   // d
-		GDT_GRANULARITY_4KILOBYTE	   // g
-	);
-
-	gdt_set_gate(
-		2, // index
-		0, 0xffffffff,
-		(struct gdt_access){
-			.type = GDT_SEGMENT_TYPE_DATA | GDT_SEGMENT_TYPE_READ_WRITE,
-			.dt = GDT_SEGMENT_DT_CODE,
-			.dpl = GDT_DPL_RING0,
-			.p = GDT_SEGMENT_PRESENT}, // access
-		GDT_DEFAULT_OPERAND_SIZE_32,   // d
-		GDT_GRANULARITY_4KILOBYTE	   // g
-	);
-
-	gdt_set_gate(
-		3, // index
-		0, 0xffffffff,
-		(struct gdt_access){
-			.type = GDT_SEGMENT_TYPE_CODE | GDT_SEGMENT_TYPE_EXECUTE_READ,
-			.dt = GDT_SEGMENT_DT_CODE,
-			.dpl = GDT_DPL_RING3,
-			.p = GDT_SEGMENT_PRESENT}, // access
-		GDT_DEFAULT_OPERAND_SIZE_32,   // d
-		GDT_GRANULARITY_4KILOBYTE	   // g
-	);
-
-	gdt_set_gate(
-		4, // index
-		0, 0xffffffff,
-		(struct gdt_access){
-			.type = GDT_SEGMENT_TYPE_DATA | GDT_SEGMENT_TYPE_READ_WRITE,
-			.dt = GDT_SEGMENT_DT_CODE,
-			.dpl = GDT_DPL_RING3,
-			.p = GDT_SEGMENT_PRESENT}, // access
-		GDT_DEFAULT_OPERAND_SIZE_32,   // d
-		GDT_GRANULARITY_4KILOBYTE	   // g
-	);
-
-	gdt_flush(&gdt_ptr);
-}
-
-static void gdt_set_gate(
-	int32_t idx,
-	uint32_t base,
-	uint32_t limit,
-	gdt_access_t access,
-	uint8_t d,
-	uint8_t g)
-{
-
-	gdt_entries[idx] = (struct gdt_entry){
-		.limit_low = limit & 0xffff,
-		.base_low = base & 0xffffff,
-		.access = access,
-		.limit_high = (limit >> 16) & 0xf,
-		.a = 0,
-		.unused = 0,
-		.d = d,
-		.g = g,
-		.base_high = (base >> 24) & 0xffff};
-}
+#include "kernel/idt.h"
+#include "kernel/io.h"
+#include "lib/string.h"
 
 #define IDT_SELECTOR 0x08
 
@@ -213,48 +46,30 @@ static void gdt_set_gate(
 #define ICW4_BUF_MASTER 0x0C /* Buffered mode/master */
 #define ICW4_SFNM 0x10		 /* Special fully nested (not) */
 
-// const uint32_t CPUID_FLAG_MSR = 1 << 5;
+extern void idt_flush(idt_ptr_t *);
 
-// bool cpuHasMSR()
-// {
-// 	uint32_t a, b, c, d; // eax, (ebx, ecx,) edx
-// 	__get_cpuid(1, &a, &b, &c, &d);
-// 	return d & CPUID_FLAG_MSR;
-// }
+idt_entry_t idt_entries[256];
+idt_ptr_t idt_ptr;
 
-// void cpuGetMSR(uint32_t msr, uint32_t *lo, uint32_t *hi)
-// {
-// 	asm volatile("rdmsr"
-// 				 : "=a"(*lo), "=d"(*hi)
-// 				 : "c"(msr));
-// }
-
-// static bool disableLocalAPIC() {
-//   if (cpuHasMSR()) {
-//     cpuGetMSR
-//   } else {
-//     return false;
-//   }
-// }
+static inline void io_wait()
+{
+	asm ("NOP");
+}
 
 static inline bool are_interrupts_enabled()
 {
-	unsigned long flags;
+	size_t flags;
 	asm volatile("pushf\n\t"
 				 "pop %0"
 				 : "=g"(flags));
 	return flags & (1 << 9);
 }
 
-static inline void io_wait()
-{
-}
-
 // from http://wiki.osdev.org/8259_PIC
 // master 8059A 0x20-0x27, slave 8059A 0x28-0x2f
 static void PIC_remap(uint8_t offset1, uint8_t offset2)
 {
-	unsigned char a1, a2;
+	uint8_t a1, a2;
 
 	a1 = inb(PIC1_DATA); // save masks
 	a2 = inb(PIC2_DATA);
@@ -281,8 +96,25 @@ static void PIC_remap(uint8_t offset1, uint8_t offset2)
 	outb(PIC2_DATA, a2);
 }
 
-static void init_idt()
+static void idt_set_gate(
+	uint8_t idx,
+	void(*base),
+	uint16_t selector,
+	idt_flags_t flags)
 {
+
+	idt_entries[idx] = (struct idt_entry){
+		.base_low 				= (uint32_t)base & 0xffff,
+		.base_high 				= ((uint32_t)base >> 16) & 0xffff,
+		.segment_selector = selector,
+		.flags 						= flags
+	};
+}
+
+void init_idt()
+{
+	printf("[IDT] Begin init idt\n");
+
 	// printf("cpuHasMSR=%i\n", cpuHasMSR());
 	// printf("Disabling APIC...\n");
 	// uint32_t msr = disable_apic();
@@ -294,10 +126,10 @@ static void init_idt()
 	memset(&idt_entries, 0, sizeof(idt_entry_t) * 256);
 
 	idt_flags_t flags = {
-		.p = IDT_SEGMENT_PRESENT,
-		.dpl = IDT_DPL_RING0,
-		.zero = 0,
-		.d = IDT_GATE_32BIT,
+		.p 				 = IDT_SEGMENT_PRESENT,
+		.dpl 			 = IDT_DPL_RING0,
+		.zero 		 = 0,
+		.d 				 = IDT_GATE_32BIT,
 		.gate_type = IDT_GATE_TYPE_INTERRUPT};
 
 	idt_set_gate(0, isr0, IDT_SELECTOR, flags);
@@ -334,7 +166,7 @@ static void init_idt()
 	idt_set_gate(31, isr31, IDT_SELECTOR, flags);
 
 	// Remap the irq table
-	printf("Remapping IRQs\n");
+	printf("[IDT] Remapping IRQs\n");
 	PIC_remap(0x20, 0x28);
 	// ICW1(Initialization Command Word)
 	// outb(0x20, 0x11);
@@ -374,19 +206,5 @@ static void init_idt()
 	// enable hardware interrupts
 	asm volatile("sti");
 	if (are_interrupts_enabled())
-		printf("interrupts enabled.\n");
-}
-
-static void idt_set_gate(
-	uint8_t idx,
-	void(*base),
-	uint16_t selector,
-	idt_flags_t flags)
-{
-
-	idt_entries[idx] = (struct idt_entry){
-		.base_low = (uint32_t)base & 0xffff,
-		.base_high = ((uint32_t)base >> 16) & 0xffff,
-		.segment_selector = selector,
-		.flags = flags};
+		printf("[IDT] interrupts enabled.\n");
 }

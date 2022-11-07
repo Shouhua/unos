@@ -82,6 +82,12 @@ void fb_write_char(char c)
 		pos = fb_pos_x + (fb_pos_y * FB_WIDTH);
 		fb_move_cursor(pos);
 	}
+	else if(c == '\t') // 只是右移4位简单情况，没有考虑换行等特殊情况
+	{ 
+		fb_pos_x += 4;
+		pos = fb_pos_x + (fb_pos_y * FB_WIDTH);
+		fb_move_cursor(pos);
+	}
 	else
 	{
 		pos = fb_pos_x + (fb_pos_y * FB_WIDTH);

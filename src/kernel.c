@@ -195,7 +195,7 @@ void test_write_cell()
 	// asm volatile("int $0x3");
 	// asm volatile("int $0x4");
 
-	// // init_timer(19); // 19HZ, setting frequency divsior
+	// // init_timer(50); // 19HZ, setting frequency divsior
 	// init_keyboard();
 
 	// init_paging();

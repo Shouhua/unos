@@ -1,6 +1,8 @@
 #ifndef __STDINT_H__
 #define __STDINT_H__
 
+#define _packed __attribute__((packed))
+
 // 使用32bits方式定义，类型参考标准库stdint.h
 typedef unsigned long size_t;
 typedef long ssize_t;

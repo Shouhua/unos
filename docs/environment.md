@@ -1,3 +1,12 @@
+## archlinux
+### basic software
+```shell
+sudo pacman -S sdl2
+sudo pacman -S qemu-system-x86
+
+sudo pacman -S bochs
+sudo pacman -S bochs-x
+```
 ## Setup environment on Ubuntu 22.04 desktop
 ### basic software
 ```shell

@@ -3,6 +3,8 @@
 		"*.json": "jsonc",
 		"cstdint": "c",
 		"framebuffer.h": "c",
-		"stdint.h": "c"
+		"stdint.h": "c",
+		"io.h": "c",
+		"pmm.h": "c"
 	}
 }
