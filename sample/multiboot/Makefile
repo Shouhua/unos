@@ -11,6 +11,7 @@ OS_BIN = $(OS_NAME).bin
 OS_ISO = $(OS_NAME).iso
 
 QEMU_MON_PORT := 55555
+QEMU_MEM := 32M
 
 ifeq ($(shell lsb_release -si), Ubuntu)
 	CC := i686-elf-gcc
@@ -70,10 +71,10 @@ bochs: all
 	@bochs -q -f bochs.cfg
 
 qemu: all
-	qemu-system-i386 -cdrom $(BUILD_DIR)/$(OS_ISO) -m 32M
+	@qemu-system-i386 -cdrom $(BUILD_DIR)/$(OS_ISO) -m $(QEMU_MEM)
 
 qemu-debug: all
-	@qemu-system-i386 -s -S -cdrom $(BUILD_DIR)/$(OS_ISO) -monitor telnet::$(QEMU_MON_PORT),server,nowait &
+	@qemu-system-i386 -s -S -m $(QEMU_MEM) -cdrom $(BUILD_DIR)/$(OS_ISO) -monitor telnet::$(QEMU_MON_PORT),server,nowait &
 	@sleep 1
 	@$(TERMINAL) -e "telnet 127.0.0.1 $(QEMU_MON_PORT)"
 	@gdb -s $(BIN_DIR)/$(OS_BIN) -ex "target remote localhost:1234"

@@ -25,5 +25,5 @@ SECTIONS {
     {
         *(.data)             /* all data sections from all files */
     }
-    __kernel_end = ALIGN(.);
+    __kernel_end = .;
 }

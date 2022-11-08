@@ -4,15 +4,12 @@
 #define PMM_BLOCKS_PER_BYTE 8
 #define PMM_BLOCK_SIZE 4096
 #define PMM_BLOCK_ALIGN PMM_BLOCK_SIZE
-#define PMM_BITMAP_MAX_SIZE (128 * 1024) // 1G need 1G/1024/8 = 128K bitmap
 
-uint32_t bitmap[PMM_BITMAP_MAX_SIZE];
 static uint32_t _pmm_memory_size = 0;
 static uint32_t _pmm_used_blocks = 0;
 static uint32_t _pmm_max_blocks = 0;
 static uint32_t *_pmm_memory_map = 0;
 
-// uint32_4 4 bytes 4*8bits
 inline static void mmap_set(uint32_t bit)
 {
 	_pmm_memory_map[bit / 32] |= (1 << (bit % 32));
@@ -67,13 +64,13 @@ int mmap_first_free()
 	return -1;
 }
 
-void init_pmm(size_t mem_size)
+void init_pmm(size_t mem_size, uint32_t* bitmap_addr)
 {
 	_pmm_memory_size = mem_size;
-	_pmm_memory_map = (uint32_t *)bitmap;
-	_pmm_max_blocks = (pmm_get_memory_size() * 1024) / PMM_BLOCK_SIZE;
+	_pmm_memory_map = bitmap_addr;
+	_pmm_max_blocks = pmm_get_memory_size() / PMM_BLOCK_SIZE;
 	_pmm_used_blocks = pmm_get_block_count();
-	memset(_pmm_memory_map, 0xf, pmm_get_block_count() / PMM_BLOCKS_PER_BYTE);
+	memset(_pmm_memory_map, 0xff, pmm_get_block_count() / PMM_BLOCKS_PER_BYTE);
 }
 
 void pmm_init_region(physical_addr base, size_t size)

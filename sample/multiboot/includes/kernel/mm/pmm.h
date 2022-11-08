@@ -5,7 +5,7 @@
 
 typedef uint32_t physical_addr;
 
-void init_pmm(size_t);
+void init_pmm(size_t, uint32_t*);
 
 //! enables a physical memory region for use
 void	pmm_init_region (physical_addr, size_t);

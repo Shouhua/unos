@@ -11,14 +11,6 @@ char *itoa(int32_t val, char *buf, int radix)
 		start = i;
 	}
 
-	// if (radix == 16)
-	// {
-	// 	buf[i++] = '0';
-	// 	buf[i++] = 'x';
-	// 	start = i;
-	// }
-	
-
 	int32_t x = val;
 	do
 	{
@@ -49,13 +41,6 @@ char *uitoa(uint32_t val, char *buf, int radix)
 {
 	uint32_t i = 0;
 	uint32_t start = i;
-
-	// if (radix == 16)
-	// {
-	// 	buf[i++] = '0';
-	// 	buf[i++] = 'x';
-	// 	start = i;
-	// }
 
 	uint32_t x = val;
 	do
@@ -94,13 +79,13 @@ size_t strlen(const char *buf)
 // Terribly naive implementation of memset to get things compiling
 // See http://www.xs-labs.com/en/blog/2013/08/06/optimising-memset/
 // for more details
-void *memset(void *s, int c, size_t n)
+void *memset(void *s, uint8_t c, size_t n)
 {
-	char *mem = (char *)s;
+	uint8_t *mem = (uint8_t *)s;
 	size_t i;
 	for (i = 0; i < n; i++)
 	{
-		mem[i] = (uint8_t)c;
+		mem[i] = c;
 	}
 	return s;
 }

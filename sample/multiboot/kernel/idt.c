@@ -206,5 +206,5 @@ void init_idt()
 	// enable hardware interrupts
 	asm volatile("sti");
 	if (are_interrupts_enabled())
-		printf("[IDT] interrupts enabled.\n");
+		printf("[IDT] Interrupts enabled.\n");
 }
