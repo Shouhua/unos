@@ -7,8 +7,9 @@
 #include "kernel/constants.h"
 #include "lib/string.h"
 
-// TODO: 使用link脚本中的symbol，必须使用她的地址然后转化，不知道为什么
-// (uint32_t)&__kernel_start
+// https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
+// https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
+// 使用(uint32_t)&__kernel_start, 原因见链接中解释
 extern uint32_t __kernel_start;
 extern uint32_t __kernel_end;
 
