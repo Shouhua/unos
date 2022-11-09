@@ -1,29 +1,47 @@
-ENTRY(loader)                /* the name of the entry label */
+ENTRY(loader)
 
 SECTIONS {
-    . = 0x00100000;          /* the code should be loaded at 1 MB */
+    . = 0x100000;
+    .boot_text ALIGN(4K) : {
+        *(.multiboot)
+        build/obj/boot/*.o(.text)
+    }
+    .boot_bss ALIGN(4K) : {
+        build/obj/boot/*.o(.bss)
+    }
+    .boot_data ALIGN(4K) : {
+        build/obj/boot/*.o(.data)
+    }
+    .boot_rodata ALIGN(4K) : {
+        build/obj/boot/*.o(.rodata)
+    }
 
-    .text ALIGN (0x1000) :
+    . += 0xC0000000;
+    .text ALIGN (0x1000) : AT(ADDR(.text) - 0xC0000000)
     {
         __kernel_start = .;
-        *(.multiboot)
-        *(.text)             /* all text sections from all files */
+        build/obj/kernel/*.o(.text)
+        build/obj/lib/*.o(.text)
     }
 
-    .rodata ALIGN (0x1000) :
+    .rodata ALIGN (0x1000) : AT(ADDR(.rodata) - 0xC0000000)
     {
-        *(.rodata*)          /* all read-only data sections from all files */
+        build/obj/kernel/*.o(.rodata)
+        build/obj/lib/*.o(.rotext)
     }
 
-    .bss ALIGN(4K) :
+    .bss ALIGN(4K) : AT(ADDR(.bss) - 0xC0000000)
     {
-        *(.COMMON)
-        *(.bss)
+        build/obj/kernel/*.o(.COMMON)
+        build/obj/kernel/*.o(.bss)
+        build/obj/lib/*.o(.COMMON)
+        build/obj/lib/*.o(.bss)
     }
 
-    .data ALIGN (0x1000) :
+    .data ALIGN (0x1000) : AT(ADDR(.data) - 0xC0000000)
     {
-        *(.data)             /* all data sections from all files */
+        build/obj/kernel/*.o(.data)
+        build/obj/lib/*.o(.data)
     }
-    __kernel_end = .;
+    __kernel_end = ALIGN(4k);
 }
