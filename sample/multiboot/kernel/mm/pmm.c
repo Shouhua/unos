@@ -64,6 +64,40 @@ int mmap_first_free()
 	return -1;
 }
 
+//! finds first free "size" number of frames and returns its index
+int mmap_first_free_s (size_t size) {
+
+	if (size==0)
+		return -1;
+
+	if (size==1)
+		return mmap_first_free ();
+
+	for (uint32_t i=0; i<pmm_get_block_count(); i++)
+		if (_pmm_memory_map[i] != 0xffffffff)
+			for (int j=0; j<32; j++) {	//! test each bit in the dword
+
+				int bit = 1<<j;
+				if (! (_pmm_memory_map[i] & bit) ) {
+
+					int startingBit = i*32;
+					startingBit+=bit;		//get the free bit in the dword at index i
+
+					uint32_t free=0; //loop through each bit to see if its enough space
+					for (uint32_t count=0; count<=size;count++) {
+
+						if (! mmap_test (startingBit+count) )
+							free++;	// this bit is clear (free frame)
+
+						if (free==size)
+							return i*4*8+j; //free count==size needed; return index
+					}
+				}
+			}
+
+	return -1;
+}
+
 void init_pmm(size_t mem_size, uint32_t* bitmap_addr)
 {
 	_pmm_memory_size = mem_size;
@@ -125,4 +159,34 @@ void pmm_free_block(void *p)
 	mmap_unset(frame);
 
 	_pmm_used_blocks--;
+}
+
+void*	pmm_alloc_blocks (size_t size) {
+
+	if (pmm_get_free_block_count() <= size)
+		return 0;	//not enough space
+
+	int frame = mmap_first_free_s (size);
+
+	if (frame == -1)
+		return 0;	//not enough space
+
+	for (uint32_t i=0; i<size; i++)
+		mmap_set (frame+i);
+
+	physical_addr addr = frame * PMM_BLOCK_SIZE;
+	_pmm_used_blocks+=size;
+
+	return (void*)addr;
+}
+
+void	pmm_free_blocks (void* p, size_t size) {
+
+	physical_addr addr = (physical_addr)p;
+	int frame = addr / PMM_BLOCK_SIZE;
+
+	for (uint32_t i=0; i<size; i++)
+		mmap_unset (frame+i);
+
+	_pmm_used_blocks-=size;
 }

@@ -20,9 +20,12 @@ else
 	CC := gcc
 	TERMINAL := xfce4-terminal --hold
 endif
+
 CFLAGS := -m32 -fno-stack-protector \
 					-ffreestanding \
 					-Wall -Wextra -Werror -g
+CFLAGS += -DDEBUG=4
+
 LDFLAGS = -T link.ld -melf_i386
 
 AS = nasm

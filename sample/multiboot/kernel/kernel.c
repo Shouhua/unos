@@ -1,9 +1,9 @@
 #include "kernel/multiboot.h"
-#include "kernel/framebuffer.h"
 #include "kernel/gdt.h"
 #include "kernel/idt.h"
+#include "kernel/framebuffer.h"
 #include "kernel/mm/pmm.h"
-// #include "kernel/mm/vmm.h"
+#include "kernel/mm/vmm.h"
 #include "kernel/constants.h"
 #include "lib/string.h"
 
@@ -75,8 +75,11 @@ void kmain(multiboot_info_t * mb_info) {
 		pmm_get_block_count(),
 		pmm_get_used_block_count(),
 		pmm_get_free_block_count());
-	// init_paging();
 
-	// asm volatile("int $0x3");
-	// asm volatile("int $0x4");
+	init_paging();
+
+	vmm_map_page((void*)VGA_BUFFER_PADDR, (void*)VGA_BUFFER_VADDR);
+	fb_set_buffer((uint8_t*)VGA_BUFFER_VADDR);
+
+	printf("[VMM] Vmm DONE\n");
 }

@@ -1,67 +1,49 @@
-// #ifndef __VMM_H__
-// #define __VMM_H__
+#ifndef __VMM_H__
+#define __VMM_H__
 
-// #include "lib/stdint.h"
-// #include "kernel/isr.h"
+#include "lib/stdint.h"
 
-// typedef struct page
-// {
-// 	uint32_t present : 1;  // Page present in memory
-// 	uint32_t rw : 1;		  // Read-only if clear, readwrite if set
-// 	uint32_t user : 1;	  // Supervisor level only if clear
-// 	uint32_t accessed : 1; // Has the page been accessed since last refresh?
-// 	uint32_t dirty : 1;	  // Has the page been written to since last refresh?
-// 	uint32_t unused : 7;	  // Amalgamation of unused and reserved bits
-// 	uint32_t frame : 20;	  // Frame address (shifted right 12 bits)
-// } page_t;
+#define PTE_PRESENT 	  0x1
+#define	PTE_WRITABLE 	  0x2		  
+#define	PTE_USER 		  0x4			  
+#define	PTE_WRITETHOUGH   0x8	  
+#define	PTE_NOT_CACHEABLE 0x10 
+#define	PTE_ACCESSED      0x20	  
+#define	PTE_DIRTY         0x40		  
+#define	PTE_PAT           0x80			  
+#define	PTE_CPU_GLOBAL 	  0x100	  
+#define	PTE_LV4_GLOBAL    0x200	  
+#define	PTE_FRAME    			0x7FFFF000	  
 
-// typedef struct page_table
-// {
-// 	page_t pages[1024];
-// } page_table_t;
+#define	PDE_PRESENT				0x1			
+#define	PDE_WRITABLE			0x2			
+#define	PDE_USER				0x4			
+#define	PDE_PWT					0x8			
+#define	PDE_PCD					0x10		
+#define	PDE_ACCESSED			0x20		
+#define	PDE_DIRTY				0x40		
+#define	PDE_4MB					0x80		
+#define	PDE_CPU_GLOBAL			0x100		
+#define	PDE_LV4_GLOBAL			0x200		
+#define	PDE_FRAME    			0x7FFFF000	  
 
-// typedef struct page_directory
-// {
-// 	/**
-// 	   Array of pointers to pagetables.
-// 	**/
-// 	page_table_t *tables[1024];
-// 	/**
-// 	   Array of pointers to the pagetables above, but gives their *physical*
-// 	   location, for loading into the CR3 register.
-// 	**/
-// 	uint32_t tablesPhysical[1024];
+typedef uint32_t pte_t;
+typedef uint32_t pde_t;
 
-// 	/**
-// 	   The physical address of tablesPhysical. This comes into play
-// 	   when we get our kernel heap allocated and the directory
-// 	   may be in a different location in virtual memory.
-// 	**/
-// 	uint32_t physicalAddr;
-// } page_directory_t;
+typedef struct pt
+{
+	pte_t entries[1024];
+} pt_t;
 
-// /**
-//    Sets up the environment, page directories etc and
-//    enables paging.
-// **/
-// void init_paging();
+typedef struct pd
+{
+	pde_t entries[1024];
+} pd_t;
 
-// /**
-//    Causes the specified page directory to be loaded into the
-//    CR3 register.
-// **/
-// void switch_page_directory(page_directory_t *);
+void init_paging();
 
-// /**
-//    Retrieves a pointer to the page required.
-//    If make == 1, if the page-table in which this page should
-//    reside isn't created, create it!
-// **/
-// page_t *get_page(uint32_t address, int make, page_directory_t *dir);
+void vmm_map_page(void* phys, void* virt);
+bool switch_page_directory(pd_t *);
+void enable_paging(bool);
 
-// /**
-//    Handler for page faults.
-// **/
-// void page_fault(registers_t regs);
-
-// #endif
+#endif
