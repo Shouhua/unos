@@ -112,7 +112,7 @@ void init_paging()
 		identity_table->entries[PAGE_TABLE_INDEX(frame)] = page;
 	}
 
-	for(int i=0, frame=0x100000, virt=0xc0000000;i<1024;i++,frame+=4096,virt+=4096) {
+	for(int i=0, frame=0x000000, virt=0xc0000000;i<1024;i++,frame+=4096,virt+=4096) {
 		pte_t page = 0;
 		page = (page & ~PTE_FRAME) | frame | PTE_PRESENT;
 		kernel_table->entries[PAGE_TABLE_INDEX(virt)] = page;

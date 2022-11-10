@@ -69,7 +69,7 @@ EnablePaging:
 	;------------------------------------------
  
 	mov		eax, PAGE_TABLE_768				; first page table
-	mov		ebx, 0x100000 | PRIV			; starting physical address of page
+	mov		ebx, 0x000000 | PRIV			; starting physical address of page
 	mov		ecx, PAGE_TABLE_ENTRIES			; for every page in table...
 .loop2:
 	mov		dword [eax], ebx				; write the entry

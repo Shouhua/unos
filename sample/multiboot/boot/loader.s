@@ -14,23 +14,29 @@ align 4                         ; the code must be 4 byte aligned
 		dd ALIGN_MEM_MAP                    ; the flags,
 		dd CHECKSUM                 ; and the checksum
 
+[section .bss]
+align 16
+stack_bottom: resb 16384
+stack_top:
+
 [section .text]                  ; start of the text (code) section
 global loader
+extern kmain
 loader:                         ; the loader label (defined as entry point in linker script)
-	mov esp, 0x9000
+	mov esp, 0x7fff
 	call InstallGDT	
-	debug
 	jmp 0x08:next
 next:
 	mov ax, DATA_DESC
 	mov ds, ax
 	mov ss, ax
 	mov es, ax
-	mov esp, 0x9000
+	mov esp, 0x7fff
 	call EnablePaging
-	extern kmain
+	mov esp, stack_top
+	debug
 	push ebx
-	call kmain
+	call kmain ; 跳转出错可能是page映射表有问题，使用qemu-debug打断点b *0x1000af(gdb在地址打断点方式)
 
 	cli
 	hlt
