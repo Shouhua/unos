@@ -80,7 +80,6 @@ static void gdt_set_gate(
 
 void init_gdt()
 {
-	printf("[GDT] Begin init gdt\n");
 	gdt_ptr.limit = sizeof(gdt_entry_t) * 5 - 1;
 	gdt_ptr.base = gdt_entries;
 
@@ -134,5 +133,4 @@ void init_gdt()
 	);
 
 	gdt_flush(&gdt_ptr);
-	printf("[GDT] End init gdt\n");
 }

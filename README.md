@@ -71,3 +71,7 @@ sudo apt install mtools # 有可能会报错invalid mformat
 ## Serial Port
 LSB: The Least Significant Byte
 MSB: The Most Significant Byte
+
+## TODO
+[ ] PCI
+[ ] Network

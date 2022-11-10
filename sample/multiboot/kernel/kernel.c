@@ -1,3 +1,4 @@
+#include "lib/string.h"
 #include "kernel/multiboot.h"
 #include "kernel/gdt.h"
 #include "kernel/idt.h"
@@ -5,7 +6,9 @@
 #include "kernel/mm/pmm.h"
 #include "kernel/mm/vmm.h"
 #include "kernel/constants.h"
-#include "lib/string.h"
+#include "hal/cpu.h"
+#include "kernel/keyboard.h"
+// #include "kernel/timer.h"
 
 // https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
 // https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
@@ -35,6 +38,10 @@ char * get_mem_type_str(multiboot_uint32_t type) {
 void kmain(multiboot_info_t * mb_info) {
 	fb_clear();
 
+	char buf[64];
+	cpu_get_brand(buf);
+	printf("[KERNEL] CPU: %s\n", buf);
+
 	init_gdt();
 	init_idt();
 
@@ -49,11 +56,11 @@ void kmain(multiboot_info_t * mb_info) {
 	uint8_t map_size = mb_info->mmap_length / sizeof(multiboot_memory_map_t);
 	printf("[PMM] Physical Memory Map:\n");
 	for (uint8_t i = 0; i < map_size; i++) {
-		printf("\tBase: 0x%08x, len: 0x%08x B, type: %d(%s)\n",
-						map[i].addr_low,
-						map[i].len_low,
-						map[i].type,
-						get_mem_type_str(map[i].type));
+		// printf("\tBase: 0x%08x, len: 0x%08x B, type: %d(%s)\n",
+		// 				map[i].addr_low,
+		// 				map[i].len_low,
+		// 				map[i].type,
+		// 				get_mem_type_str(map[i].type));
 		if(map[i].type == MULTIBOOT_MEMORY_AVAILABLE) {
 			// 标记available内存
 			pmm_init_region(map[i].addr_low, map[i].len_low);
@@ -66,7 +73,7 @@ void kmain(multiboot_info_t * mb_info) {
 		pmm_get_used_block_count(),
 		pmm_get_free_block_count());
 
-	printf("[PMM] Start: 0x%x B; end: 0x%x B; size: 0x%x B\n", (uint32_t)&__kernel_start, (uint32_t)&__kernel_end, (uint32_t)(&__kernel_end - &__kernel_start));
+	// printf("[PMM] Start: 0x%x B; end: 0x%x B; size: 0x%x B\n", (uint32_t)&__kernel_start, (uint32_t)&__kernel_end, (uint32_t)(&__kernel_end - &__kernel_start));
 	// 将内核占用内存调整为占用
 	pmm_deinit_region((uint32_t)&__kernel_start, (uint32_t)(&__kernel_end - &__kernel_start));
 	printf("[PMM] Allocate %d block for kernel\n", (uint32_t)(&__kernel_end - &__kernel_start)/4096);
@@ -82,4 +89,6 @@ void kmain(multiboot_info_t * mb_info) {
 	fb_set_buffer((uint8_t*)VGA_BUFFER_VADDR);
 
 	printf("[VMM] Vmm DONE\n");
+	// init_timer(50); // 19HZ, setting frequency divsior
+	init_keyboard();
 }

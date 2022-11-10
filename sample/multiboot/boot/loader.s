@@ -23,14 +23,14 @@ stack_top:
 global loader
 extern kmain
 loader:                         ; the loader label (defined as entry point in linker script)
-	mov esp, 0x7fff
-	call InstallGDT	
-	jmp 0x08:next
-next:
-	mov ax, DATA_DESC
-	mov ds, ax
-	mov ss, ax
-	mov es, ax
+; 	mov esp, 0x7fff ; 有无gdt无所谓了
+; 	call InstallGDT	
+; 	jmp 0x08:next
+; next:
+; 	mov ax, DATA_DESC
+; 	mov ds, ax
+; 	mov ss, ax
+; 	mov es, ax
 	mov esp, 0x7fff
 	call EnablePaging
 	mov esp, stack_top
