@@ -15,17 +15,19 @@
 
 uint32_t tick = 0;
 
-static void timer_cb(registers_t regs)
+void timer_cb(registers_t* regs)
 {
-	tick++;
-	printf("tick: %i\n", tick);
-	printf("h/w interrupt: %i\n", regs.int_no);
+	if(tick < 2) {
+		tick++;
+		printf("tick: %i\n", tick);
+		printf("h/w interrupt: %i\n", regs->int_no);
+	}
 }
 
 void init_timer(uint32_t frequency)
 {
 	printf("initializing timer.\n");
-	register_interrupt_handler(IRQ0, &timer_cb);
+	register_interrupt_handler(IRQ0, timer_cb);
 
 	uint32_t divisor = PIT_TIMER_MAX_HZ / frequency;
 

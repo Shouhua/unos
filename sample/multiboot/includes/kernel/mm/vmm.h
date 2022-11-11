@@ -2,6 +2,7 @@
 #define __VMM_H__
 
 #include "lib/stdint.h"
+#include "kernel/isr.h"
 
 #define PTE_PRESENT 	  0x1
 #define	PTE_WRITABLE 	  0x2		  
@@ -45,5 +46,6 @@ void init_paging();
 void vmm_map_page(void* phys, void* virt);
 bool switch_page_directory(pd_t *);
 void enable_paging(bool);
+void page_fault_handler(registers_t* regs);
 
 #endif

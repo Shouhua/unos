@@ -77,6 +77,13 @@ break 10 # linenumber, function name
 info breakpoints
 print 0x7fffffffdde8 # p 0x7fffffffdde8
 x /16xb 0x7fffffffdde8
+b *0x1000af
+where
+frame
+step (finish/fin)
+p /x *array@len
+list /l/l-/l+/ l 1,10
+layout [asm/src]
 ```
 
 ## gdb + vscode

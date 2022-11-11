@@ -5,6 +5,7 @@
 		"framebuffer.h": "c",
 		"stdint.h": "c",
 		"io.h": "c",
-		"pmm.h": "c"
+		"pmm.h": "c",
+		"timer.h": "c"
 	}
 }

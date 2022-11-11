@@ -8,7 +8,7 @@
 #include "kernel/constants.h"
 #include "hal/cpu.h"
 #include "kernel/keyboard.h"
-// #include "kernel/timer.h"
+#include "kernel/timer.h"
 
 // https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
 // https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
@@ -89,6 +89,9 @@ void kmain(multiboot_info_t * mb_info) {
 	fb_set_buffer((uint8_t*)VGA_BUFFER_VADDR);
 
 	printf("[VMM] Vmm DONE\n");
+	uint32_t *ptr = (uint32_t *)0xA0000000;
+	uint32_t do_page_fault = *ptr;
+	printf("%x\n", do_page_fault);
 	// init_timer(50); // 19HZ, setting frequency divsior
-	init_keyboard();
+	// init_keyboard();
 }

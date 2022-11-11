@@ -34,9 +34,8 @@ loader:                         ; the loader label (defined as entry point in li
 	mov esp, 0x7fff
 	call EnablePaging
 	mov esp, stack_top
-	debug
 	push ebx
 	call kmain ; 跳转出错可能是page映射表有问题，使用qemu-debug打断点b *0x1000af(gdb在地址打断点方式)
 
-	cli
+	; cli
 	hlt

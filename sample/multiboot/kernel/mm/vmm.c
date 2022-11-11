@@ -4,7 +4,6 @@
 #include "kernel/mm/vmm.h"
 #include "lib/string.h"
 #include "lib/log.h"
-#include "kernel/isr.h"
 
 #define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
 #define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
@@ -13,7 +12,39 @@
 // The current page directory;
 pd_t* cur_dir = 0;
 
-void page_fault(registers_t regs)
+inline pte_t* vmm_pt_lookup_entry(pt_t* p, uint32_t virt_addr)
+{
+	if(p) return &p->entries[PAGE_TABLE_INDEX(virt_addr)];
+	return 0;
+}
+
+inline pde_t* vmm_pd_lookup_entry(pd_t* p, uint32_t virt_addr)
+{
+	if(p) return &p->entries[PAGE_DIRECTORY_INDEX(virt_addr)];
+	return 0;
+}
+
+void vmm_flush_tlb_entry(uint32_t virt_addr)
+{
+    asm volatile("invlpg (%0)" ::"r"(virt_addr) : "memory");
+}
+
+bool vmm_alloc_page(pte_t* e) 
+{
+	void* p = pmm_alloc_block();
+	if(!p) return false;
+	*e = (*e & ~PTE_FRAME) | (uint32_t)p | PTE_PRESENT;
+	return true;
+}
+
+void vmm_free_page(pte_t* e)
+{
+	void* p = (void*)(*e & PTE_FRAME);
+	if(p) pmm_free_block(p);
+	*e &= ~PTE_PRESENT;
+}
+
+void page_fault_handler(registers_t* regs)
 {
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.
@@ -22,11 +53,11 @@ void page_fault(registers_t regs)
 				 : "=r"(faulting_address));
 
 	// The error code gives us details of what happened.
-	int present = !(regs.err_code & 0x1); // Page not present
-	int rw = regs.err_code & 0x2;		  // Write operation?
-	int us = regs.err_code & 0x4;		  // Processor was in user-mode?
-	int reserved = regs.err_code & 0x8;	  // Overwritten CPU-reserved bits of page entry?
-	// int id = regs.err_code & 0x10;		  // Caused by an instruction fetch?
+	int present = !(regs->err_code & 0x1); // Page not present
+	int rw = regs->err_code & 0x2;		  // Write operation?
+	int us = regs->err_code & 0x4;		  // Processor was in user-mode?
+	int reserved = regs->err_code & 0x8;	  // Overwritten CPU-reserved bits of page entry?
+	// int id = regs->err_code & 0x10;		  // Caused by an instruction fetch?
 
 	// Output an error message.
 	printf("Page fault! ( ");
@@ -108,13 +139,13 @@ void init_paging()
 	// NOTE: 这里如果给的256，0-0xFFFF映射，eip现在是比如0x104080，由于找不到映射，会出现page fault问题
 	for(int i = 0, frame=0x0; i<1024;i++,frame+=4096) {
 		pte_t page = 0;
-		page = (page & ~PTE_FRAME) | frame | PTE_PRESENT; // frame类似0x1000，低12位都是0
+		page = (page & ~PTE_FRAME) | frame | PTE_PRESENT | PTE_WRITABLE; // frame类似0x1000，低12位都是0
 		identity_table->entries[PAGE_TABLE_INDEX(frame)] = page;
 	}
 
 	for(int i=0, frame=0x000000, virt=0xc0000000;i<1024;i++,frame+=4096,virt+=4096) {
 		pte_t page = 0;
-		page = (page & ~PTE_FRAME) | frame | PTE_PRESENT;
+		page = (page & ~PTE_FRAME) | frame | PTE_PRESENT | PTE_WRITABLE;
 		kernel_table->entries[PAGE_TABLE_INDEX(virt)] = page;
 	}
 
@@ -129,7 +160,7 @@ void init_paging()
 	pde_t* kernel_pde = &dir->entries[PAGE_DIRECTORY_INDEX(0xC0000000)];
 	*kernel_pde = (*kernel_pde & ~PDE_FRAME) | (physical_addr)kernel_table | PDE_PRESENT | PDE_WRITABLE;
 
-	register_interrupt_handler(14, page_fault);
+	register_interrupt_handler(14, page_fault_handler);
 	switch_page_directory(dir);
 	enable_paging(true);
 }
