@@ -89,9 +89,9 @@ void kmain(multiboot_info_t * mb_info) {
 	fb_set_buffer((uint8_t*)VGA_BUFFER_VADDR);
 
 	printf("[VMM] Vmm DONE\n");
-	uint32_t *ptr = (uint32_t *)0xA0000000;
-	uint32_t do_page_fault = *ptr;
-	printf("%x\n", do_page_fault);
-	// init_timer(50); // 19HZ, setting frequency divsior
-	// init_keyboard();
+	// uint32_t *ptr = (uint32_t *)0xA0000000;
+	// uint32_t do_page_fault = *ptr;
+	// printf("%x\n", do_page_fault);
+	init_timer(50); // 19HZ, setting frequency divsior
+	init_keyboard();
 }

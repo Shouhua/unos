@@ -38,4 +38,6 @@ loader:                         ; the loader label (defined as entry point in li
 	call kmain ; 跳转出错可能是page映射表有问题，使用qemu-debug打断点b *0x1000af(gdb在地址打断点方式)
 
 	; cli
-	hlt
+	; hlt
+.loop:
+	jmp .loop

@@ -228,9 +228,10 @@ bool scrlock_state;	// 滚动锁定
 bool numlock_state;	// 数字锁定
 bool extcode_state;	// 扩展码状态
 
-// static void keyboard_cb(registers_t regs)
+// static void keyboard_cb(registers_t* regs)
 void keyboard_cb()
 {
+	// printf("[KeyBoard] Interrupt: %d\n", regs->int_no);
 	unsigned char scancode = inb(KBD_DATA_PORT);
 	// TOOD: buffer this somewhere
 	// if (scan == 76) {
@@ -355,5 +356,5 @@ void init_keyboard()
 	// while ((c = inb(KBD_DATA_PORT))) {
 	//   fb_write_str(&c);
 	// }
-	register_interrupt_handler(IRQ1, &keyboard_cb);
+	register_interrupt_handler(IRQ1, keyboard_cb);
 }

@@ -17,7 +17,7 @@ uint32_t tick = 0;
 
 void timer_cb(registers_t* regs)
 {
-	if(tick < 2) {
+	if(tick < 1) {
 		tick++;
 		printf("tick: %i\n", tick);
 		printf("h/w interrupt: %i\n", regs->int_no);
@@ -33,8 +33,8 @@ void init_timer(uint32_t frequency)
 
 	outb(PIT_COMMAND_PORT, PIT_REPEAT);
 
-	uint8_t low = divisor & 0xff;
-	uint8_t high = (divisor >> 8) & 0xff;
+	uint16_t low = divisor & 0xff;
+	uint16_t high = (divisor >> 8) & 0xff;
 
 	outb(PIT_DATA_PORT0, low);
 	outb(PIT_DATA_PORT0, high);

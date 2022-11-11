@@ -29,7 +29,7 @@ CFLAGS += -DDEBUG=4
 LDFLAGS = -T link.ld -melf_i386
 
 AS = nasm
-ASFLAGS = -f elf -i boot
+ASFLAGS = -f elf -i boot -g -F dwarf
 
 INCLUDES := $(patsubst %, -I%, $(INCLUDES_DIR))
 C_SOURCE_FILES := $(shell find -name "*.[c]")
