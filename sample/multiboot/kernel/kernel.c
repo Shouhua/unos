@@ -9,12 +9,15 @@
 #include "hal/cpu.h"
 #include "kernel/keyboard.h"
 #include "kernel/timer.h"
+#include "kernel/tss.h"
 
 // https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
 // https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
 // 使用(uint32_t)&__kernel_start, 原因见链接中解释
 extern uint32_t __kernel_start;
 extern uint32_t __kernel_end;
+
+extern void enter_userland();
 
 char * get_mem_type_str(multiboot_uint32_t type) {
 	if(type == MULTIBOOT_MEMORY_AVAILABLE) {
@@ -44,6 +47,7 @@ void kmain(multiboot_info_t * mb_info) {
 
 	init_gdt();
 	init_idt();
+	tss_init(5, 0x10, 0);
 
 	init_pmm(MEM_1MB + (mb_info->mem_upper << 10), &__kernel_end);
 
@@ -94,4 +98,10 @@ void kmain(multiboot_info_t * mb_info) {
 	// printf("%x\n", do_page_fault);
 	init_timer(50); // 19HZ, setting frequency divsior
 	init_keyboard();
+
+	uint32_t esp;
+	asm volatile("mov %%esp, %0" : "=r"(esp));
+	tss_set_stack(0x10, esp);
+	enter_userland();
+	printf("Uer land done\n");
 }

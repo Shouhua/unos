@@ -15,7 +15,7 @@ extern void idt_flush(idt_ptr_t *);
 static void init_gdt();
 static void init_idt();
 
-static void gdt_set_gate(
+static void gdt_set_entry(
 	int32_t idx,
 	uint32_t base,
 	uint32_t limit,
@@ -96,8 +96,8 @@ static void init_gdt()
 	gdt_ptr.limit = sizeof(gdt_entry_t) * 5 - 1;
 	gdt_ptr.base = gdt_entries;
 
-	gdt_set_gate(0, 0, 0, (struct gdt_access){0, 0, 0, 0}, 0, 0);
-	gdt_set_gate(
+	gdt_set_entry(0, 0, 0, (struct gdt_access){0, 0, 0, 0}, 0, 0);
+	gdt_set_entry(
 		1, // index
 		0, 0xffffffff,
 		(struct gdt_access){
@@ -109,7 +109,7 @@ static void init_gdt()
 		GDT_GRANULARITY_4KILOBYTE	   // g
 	);
 
-	gdt_set_gate(
+	gdt_set_entry(
 		2, // index
 		0, 0xffffffff,
 		(struct gdt_access){
@@ -121,7 +121,7 @@ static void init_gdt()
 		GDT_GRANULARITY_4KILOBYTE	   // g
 	);
 
-	gdt_set_gate(
+	gdt_set_entry(
 		3, // index
 		0, 0xffffffff,
 		(struct gdt_access){
@@ -133,7 +133,7 @@ static void init_gdt()
 		GDT_GRANULARITY_4KILOBYTE	   // g
 	);
 
-	gdt_set_gate(
+	gdt_set_entry(
 		4, // index
 		0, 0xffffffff,
 		(struct gdt_access){
@@ -148,7 +148,7 @@ static void init_gdt()
 	gdt_flush(&gdt_ptr);
 }
 
-static void gdt_set_gate(
+static void gdt_set_entry(
 	int32_t idx,
 	uint32_t base,
 	uint32_t limit,

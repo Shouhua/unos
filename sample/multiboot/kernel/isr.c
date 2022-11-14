@@ -2,6 +2,7 @@
 #include "kernel/isr.h"
 #include "kernel/io.h"
 #include "lib/string.h"
+#include "lib/log.h"
 
 #define PIC1 0x20 /* IO base address for master PIC */
 #define PIC2 0xA0 /* IO base address for slave PIC */
@@ -24,6 +25,7 @@ void isr_handler(registers_t regs)
     else
     {
 			printf("[ISR HANDLER] unhandled interrupt: %d, error_code: %d\n", regs.int_no, regs.err_code);
+			PANIC("");
     }
 }
 

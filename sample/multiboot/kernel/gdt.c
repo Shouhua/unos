@@ -1,63 +1,14 @@
 #include "kernel/gdt.h"
 #include "lib/string.h"
 
+#define GDT_ENTRY_SIZE 6
+
 extern void gdt_flush(gdt_ptr_t *);
 
-gdt_entry_t gdt_entries[5];
+gdt_entry_t gdt_entries[GDT_ENTRY_SIZE];
 gdt_ptr_t gdt_ptr;
 
-#define GDT_ACCESS_TYPE_CODE 10
-
-// Granularity Field (1 bit)
-#define GDT_GRANULARITY_BYTE 0
-#define GDT_GRANULARITY_4KILOBYTE 1
-
-// D Field (1 bit) - defines operand size for code segments
-#define GDT_DEFAULT_OPERAND_SIZE_16 0
-#define GDT_DEFAULT_OPERAND_SIZE_32 1
-
-// DPL Field (2 bits)
-#define GDT_DPL_RING0 0
-#define GDT_DPL_RING1 1
-#define GDT_DPL_RING2 2
-#define GDT_DPL_RING3 3
-
-// Segment Type Field (4 bits)
-#define GDT_SEGMENT_TYPE_DATA 0
-#define GDT_SEGMENT_TYPE_CODE 0x8
-
-// Data Type
-// code: 1, confirming, readable(1 readable, 0 only execute), accessed(0)
-// code: 0, expand down, writable, accessed
-// E - expand direction
-#define GDT_SEGMENT_TYPE_EXPAND_UP 0
-#define GDT_SEGMENT_TYPE_EXPAND_DOWN 0x4
-
-// W - read/write
-#define GDT_SEGMENT_TYPE_READ_ONLY 0
-#define GDT_SEGMENT_TYPE_READ_WRITE 0x2
-
-// Code Type
-// C - non/confirming
-#define GDT_SEGMENT_TYPE_NONCONFORMING 0
-#define GDT_SEGMENT_TYPE_CONFORMING 0x4
-
-// R - execute/read
-#define GDT_SEGMENT_TYPE_EXECUTE_ONLY 0
-#define GDT_SEGMENT_TYPE_EXECUTE_READ 0x2
-
-// A - accessed
-#define GDT_SEGMENT_TYPE_RESET_ACCESSED 0
-
-// Segment Present (p) - segment present in memory?
-#define GDT_SEGMENT_NOT_PRESENT 0
-#define GDT_SEGMENT_PRESENT 1
-
-// Descriptor Type (S)
-#define GDT_SEGMENT_DT_SYSTEM 0
-#define GDT_SEGMENT_DT_CODE 1
-
-static void gdt_set_gate(
+void gdt_set_entry(
 		int32_t idx,
 		uint32_t base,
 		uint32_t limit,
@@ -80,11 +31,11 @@ static void gdt_set_gate(
 
 void init_gdt()
 {
-	gdt_ptr.limit = sizeof(gdt_entry_t) * 5 - 1;
+	gdt_ptr.limit = sizeof(gdt_entry_t) * GDT_ENTRY_SIZE - 1;
 	gdt_ptr.base = gdt_entries;
 
-	gdt_set_gate(0, 0, 0, (struct gdt_access){0, 0, 0, 0}, 0, 0);
-	gdt_set_gate(
+	gdt_set_entry(0, 0, 0, (struct gdt_access){0, 0, 0, 0}, 0, 0);
+	gdt_set_entry(
 			1, // index
 			0, 0xffffffff,
 			(struct gdt_access){
@@ -96,7 +47,7 @@ void init_gdt()
 			GDT_GRANULARITY_4KILOBYTE			 // g
 	);
 
-	gdt_set_gate(
+	gdt_set_entry(
 			2, // index
 			0, 0xffffffff,
 			(struct gdt_access){
@@ -108,7 +59,7 @@ void init_gdt()
 			GDT_GRANULARITY_4KILOBYTE			 // g
 	);
 
-	gdt_set_gate(
+	gdt_set_entry(
 			3, // index
 			0, 0xffffffff,
 			(struct gdt_access){
@@ -120,7 +71,7 @@ void init_gdt()
 			GDT_GRANULARITY_4KILOBYTE			 // g
 	);
 
-	gdt_set_gate(
+	gdt_set_entry(
 			4, // index
 			0, 0xffffffff,
 			(struct gdt_access){
