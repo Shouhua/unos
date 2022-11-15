@@ -8,8 +8,8 @@
 static uint32_t fb_pos_x = 0;
 static uint32_t fb_pos_y = 0;
 
-static uint8_t fg = FB_WHITE;
-static uint8_t bg = FB_BLACK;
+static uint8_t current_fg = FB_WHITE;
+static uint8_t current_bg = FB_BLACK;
 static uint8_t *framebuffer_addr = (uint8_t *)0x000B8000;
 
 void fb_set_buffer(uint8_t *addr) 
@@ -19,14 +19,14 @@ void fb_set_buffer(uint8_t *addr)
 
 void fb_set_color(uint8_t fg, uint8_t bg)
 {
-	fg = fg;
-	bg = bg;
+	current_fg = fg;
+	current_bg = bg;
 }
 
 void fb_reset_color()
 {
-	fg = FB_WHITE;
-	bg = FB_BLACK;
+	current_fg = FB_WHITE;
+	current_bg = FB_BLACK;
 }
 
 /**
@@ -40,7 +40,7 @@ void fb_write_cell(int16_t i, int8_t c)
 {
 	uint8_t *fb = (uint8_t *)framebuffer_addr;
 	fb[i * 2] = c;
-	fb[i * 2 + 1] = ((bg & 0x0f) << 4) | (fg & 0x0f);
+	fb[i * 2 + 1] = ((current_bg & 0x0f) << 4) | (current_fg & 0x0f);
 }
 
 void fb_move_cursor(uint16_t pos)
