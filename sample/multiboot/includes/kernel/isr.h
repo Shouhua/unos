@@ -26,7 +26,7 @@ typedef struct registers
 	uint32_t ds;										// data segment
 	uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // pushed by pusha
 	uint32_t int_no, err_code;						// interrupt number & error code
-	uint32_t eip, cs, eflags, usereap, ss;			// pushed by processor
+	uint32_t eip, cs, eflags, useresp, ss;			// pushed by processor
 } registers_t;
 
 // Enables registration of callbacks for interrupts or IRQs.

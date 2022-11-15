@@ -17,6 +17,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 
+#define NULL 0
 /** Expands to the integer constant 1. */
 #define true 1
 /** Expands to the integer constant 0. */

@@ -41,8 +41,11 @@ typedef struct pd
 	pde_t entries[1024];
 } pd_t;
 
+extern pd_t* cur_dir;
+
 void init_paging();
 
+void* virt2phys(void* virt_addr);
 void vmm_map_page(void* phys, void* virt);
 bool switch_page_directory(pd_t *);
 void enable_paging(bool);

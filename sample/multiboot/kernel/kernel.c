@@ -10,6 +10,7 @@
 #include "kernel/keyboard.h"
 #include "kernel/timer.h"
 #include "kernel/tss.h"
+#include "kernel/mm/malloc.h"
 
 // https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
 // https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
@@ -36,6 +37,12 @@ char * get_mem_type_str(multiboot_uint32_t type) {
 		return "Bad RAM";
 	}
 	return "**NOT KNOWN**";
+}
+
+void print_jiffies() {
+	fb_set_color(FB_RED, FB_BLACK);
+	printf("[Kernel] Time callback jiffies: %d\n", jiffies);
+	fb_reset_color();
 }
 
 void kmain(multiboot_info_t * mb_info) {
@@ -71,37 +78,47 @@ void kmain(multiboot_info_t * mb_info) {
 		}
 	}
 
-	printf("[PMM] Pmm initialized with %d KB physical memory\n", pmm_get_memory_size()/1024);
-	printf("[PMM] Pmm initialized blocks: %d, used or reserved blocks: %d, free blocks: %d\n", 
-		pmm_get_block_count(),
-		pmm_get_used_block_count(),
-		pmm_get_free_block_count());
+	// printf("[PMM] Pmm initialized with %d KB physical memory\n", pmm_get_memory_size()/1024);
+	// printf("[PMM] Pmm initialized blocks: %d, used or reserved blocks: %d, free blocks: %d\n", 
+	// 	pmm_get_block_count(),
+	// 	pmm_get_used_block_count(),
+	// 	pmm_get_free_block_count());
 
 	// printf("[PMM] Start: 0x%x B; end: 0x%x B; size: 0x%x B\n", (uint32_t)&__kernel_start, (uint32_t)&__kernel_end, (uint32_t)(&__kernel_end - &__kernel_start));
 	// 将内核占用内存调整为占用
-	pmm_deinit_region((uint32_t)&__kernel_start, (uint32_t)(&__kernel_end - &__kernel_start));
-	printf("[PMM] Allocate %d block for kernel\n", (uint32_t)(&__kernel_end - &__kernel_start)/4096);
+	// pmm_deinit_region((uint32_t)&__kernel_start, (uint32_t)(&__kernel_end - &__kernel_start));
+	// 调整，想着kernel_end-0x400000，位heap区域, 后面取消pmm_alloc_bloc，或者基于这个重构malloc，统一分配内核内存
+	pmm_deinit_region((uint32_t)&__kernel_start, 0x400000 - (uint32_t)(&__kernel_start));
+	// printf("[PMM] Allocate %d block for kernel\n", (0x400000 - (uint32_t)(&__kernel_start))/4096);
 
-	printf("[PMM] Pmm initialized blocks: %d, used or reserved blocks: %d, free blocks: %d\n", 
-		pmm_get_block_count(),
-		pmm_get_used_block_count(),
-		pmm_get_free_block_count());
+	// printf("[PMM] Pmm initialized blocks: %d, used or reserved blocks: %d, free blocks: %d\n", 
+	// 	pmm_get_block_count(),
+	// 	pmm_get_used_block_count(),
+	// 	pmm_get_free_block_count());
 
 	init_paging();
-
 	vmm_map_page((void*)VGA_BUFFER_PADDR, (void*)VGA_BUFFER_VADDR);
 	fb_set_buffer((uint8_t*)VGA_BUFFER_VADDR);
-
 	printf("[VMM] Vmm DONE\n");
+
+	// 分配kernel heap
+	init_mm((uint32_t)&__kernel_end, 0xC0400000);
+	// mm_print_info();
+
 	// uint32_t *ptr = (uint32_t *)0xA0000000;
 	// uint32_t do_page_fault = *ptr;
 	// printf("%x\n", do_page_fault);
-	init_timer(50); // 19HZ, setting frequency divsior
+	init_timer(100);
 	init_keyboard();
 
-	uint32_t esp;
-	asm volatile("mov %%esp, %0" : "=r"(esp));
-	tss_set_stack(0x10, esp);
-	enter_userland();
-	printf("Uer land done\n");
+
+	register_timer_callback(print_jiffies, 3);
+	for(;;);
+
+	// userland
+	// uint32_t esp;
+	// asm volatile("mov %%esp, %0" : "=r"(esp));
+	// tss_set_stack(0x10, esp);
+	// enter_userland();
+	// printf("Uer land done\n");
 }

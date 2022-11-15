@@ -23,7 +23,7 @@ endif
 
 CFLAGS := -m32 -fno-stack-protector \
 					-ffreestanding \
-					-Wall -Wextra -Werror -g
+					-Wall -Wextra -Werror -g -O0
 CFLAGS += -DDEBUG=4
 
 LDFLAGS = -T link.ld -melf_i386

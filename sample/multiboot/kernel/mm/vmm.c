@@ -5,12 +5,23 @@
 #include "lib/string.h"
 #include "lib/log.h"
 
-#define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
-#define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
-#define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xfff)
+#define PAGE_DIRECTORY_INDEX(x) (((uint32_t)(x) >> 22) & 0x3ff)
+#define PAGE_TABLE_INDEX(x) (((uint32_t)(x) >> 12) & 0x3ff)
+#define PAGE_GET_PHYSICAL_ADDRESS(x) ((uint32_t)x & ~0xfff)
 
 // The current page directory;
 pd_t* cur_dir = 0;
+
+// TODO 需要好好调整
+void* virt2phys(void* virt_addr) {
+	uint32_t page_dir_idx = PAGE_DIRECTORY_INDEX(virt_addr);
+	uint32_t page_tbl_idx = PAGE_TABLE_INDEX(virt_addr);
+	uint32_t page_frame_offset = PAGE_GET_PHYSICAL_ADDRESS(virt_addr);
+	pde_t table = cur_dir->entries[page_dir_idx];
+	uint32_t t = ((pt_t*)(table|0xFFFFFFF8))->entries[page_tbl_idx];
+	t = (t << 12) + page_frame_offset;
+	return (void*)t;
+}
 
 inline pte_t* vmm_pt_lookup_entry(pt_t* p, uint32_t virt_addr)
 {
@@ -116,7 +127,7 @@ void vmm_map_page(void* phys, void* virt) {
 		pde_t* dir_entry = &dir->entries[PAGE_DIRECTORY_INDEX((uint32_t)virt)];
 		*dir_entry = (*dir_entry & ~PDE_FRAME) | (physical_addr)table | PDE_PRESENT | PDE_WRITABLE | PDE_USER;
 	}
-	pt_t* table = (pt_t*)PAGE_GET_PHYSICAL_ADDRESS(e);
+	pt_t* table = (pt_t*)PAGE_GET_PHYSICAL_ADDRESS(*e);
 	pte_t* page = &table->entries[PAGE_TABLE_INDEX((uint32_t)virt)];
 	*page = (*page & ~PTE_FRAME) | (physical_addr)phys | PTE_PRESENT | PTE_WRITABLE | PTE_USER;
 }
@@ -143,7 +154,7 @@ void init_paging()
 		identity_table->entries[PAGE_TABLE_INDEX(frame)] = page;
 	}
 
-	for(int i=0, frame=0x000000, virt=0xc0000000;i<1024;i++,frame+=4096,virt+=4096) {
+	for(int i=0, frame=0x000000, virt=0xC0000000;i<1025;i++,frame+=4096,virt+=4096) {
 		pte_t page = 0;
 		// 添加PTE_USER为了在userland里面可以使用相关虚拟地址, 不然page fault
 		page = (page & ~PTE_FRAME) | frame | PTE_PRESENT | PTE_WRITABLE | PTE_USER;
