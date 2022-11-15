@@ -16,7 +16,7 @@
 
 uint32_t tick = 0;
 
-static void timer_cb(registers_t regs)
+static void timer_cb(register_t regs)
 {
 	tick++;
 	printf("tick: %i\n", tick);

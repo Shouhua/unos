@@ -226,7 +226,7 @@ static bool scrlock_state;	// 滚动锁定
 static bool numlock_state;	// 数字锁定
 static bool extcode_state;	// 扩展码状态
 
-// static void keyboard_cb(registers_t regs)
+// static void keyboard_cb(register_t regs)
 static void keyboard_cb()
 {
 	unsigned char scancode = inb(KBD_DATA_PORT);

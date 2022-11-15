@@ -73,7 +73,7 @@ LSB: The Least Significant Byte
 MSB: The Most Significant Byte
 
 ## TODO
-[ ] Memory Management
+[✕] Memory Management 
 [ ] Stack and heap on protection mode
 [ ] User land
 [ ] PCI

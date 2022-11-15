@@ -102,6 +102,16 @@ void *memmove(void *dst, const void *src, size_t len)
 	return dstmem;
 }
 
+void *memcpy(void *dst, void const *src, int n)
+{
+	char * ret = dst;
+	char * p = dst;
+	const char * q = src;
+	while (n--)
+			*p++ = *q++;
+	return ret;
+}
+
 int printf(const char *format, ...)
 {
 	char **arg = (char **)&format;

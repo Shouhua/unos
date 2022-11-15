@@ -14,12 +14,13 @@ pd_t* cur_dir = 0;
 
 // TODO 需要好好调整
 void* virt2phys(void* virt_addr) {
-	uint32_t page_dir_idx = PAGE_DIRECTORY_INDEX(virt_addr);
-	uint32_t page_tbl_idx = PAGE_TABLE_INDEX(virt_addr);
-	uint32_t page_frame_offset = PAGE_GET_PHYSICAL_ADDRESS(virt_addr);
-	pde_t table = cur_dir->entries[page_dir_idx];
-	uint32_t t = ((pt_t*)(table|0xFFFFFFF8))->entries[page_tbl_idx];
-	t = (t << 12) + page_frame_offset;
+	// uint32_t page_dir_idx = PAGE_DIRECTORY_INDEX(virt_addr);
+	// uint32_t page_tbl_idx = PAGE_TABLE_INDEX(virt_addr);
+	// uint32_t page_frame_offset = PAGE_GET_PHYSICAL_ADDRESS(virt_addr);
+	// pde_t table = cur_dir->entries[page_dir_idx];
+	// uint32_t t = ((pt_t*)(table|0xFFFFFFF8))->entries[page_tbl_idx];
+	// t = (t << 12) + page_frame_offset;
+	uint32_t t = (uint32_t*)virt_addr - (uint32_t*)0xC0000000;
 	return (void*)t;
 }
 
@@ -55,7 +56,7 @@ void vmm_free_page(pte_t* e)
 	*e &= ~PTE_PRESENT;
 }
 
-void page_fault_handler(registers_t* regs)
+void page_fault_handler(register_t* regs)
 {
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.

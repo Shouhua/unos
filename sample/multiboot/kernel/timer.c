@@ -39,7 +39,7 @@ void register_timer_callback(timer_callback callback, uint32_t sec) {
 	head = node;
 }
 
-void timer_handler(__attribute__((unused))registers_t* regs)
+void timer_handler(__attribute__((unused))register_t* regs)
 {
 	jiffies++;
 	if(head != NULL) {

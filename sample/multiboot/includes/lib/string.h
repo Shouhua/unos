@@ -10,5 +10,6 @@ int printf(const char *format, ...);
 
 void *memset(void *s, int c, size_t n);
 void *memmove(void *dst, const void *src, size_t len);
+void *memcpy(void *dst, void const *src, int n);
 
 #endif

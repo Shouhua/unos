@@ -10,9 +10,6 @@ OS_NAME := unos
 OS_BIN = $(OS_NAME).bin
 OS_ISO = $(OS_NAME).iso
 
-QEMU_MON_PORT := 55555
-QEMU_MEM := 32M
-
 ifeq ($(shell lsb_release -si), Ubuntu)
 	CC := i686-elf-gcc
 	TERMINAL := gnome-terminal
@@ -30,6 +27,12 @@ LDFLAGS = -T link.ld -melf_i386
 
 AS = nasm
 ASFLAGS = -f elf -i boot -g -F dwarf
+
+QEMU := qemu-system-i386
+QEMU_MON_PORT := 55555
+QEMU_MEM := 32M
+QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) -m $(QEMU_MEM) -serial stdio -netdev tap,helper=/usr/lib/qemu-bridge-helper,id=thor_net0 -device rtl8139,netdev=thor_net0,id=thor_nic0
+QEMU_DEBUG_CONFIG := $(QEMU_CONFIG) -s -S -monitor telnet::$(QEMU_MON_PORT),server,nowait &
 
 INCLUDES := $(patsubst %, -I%, $(INCLUDES_DIR))
 C_SOURCE_FILES := $(shell find -name "*.[c]")
@@ -74,10 +77,10 @@ bochs: all
 	@bochs -q -f bochs.cfg
 
 qemu: all
-	@qemu-system-i386 -cdrom $(BUILD_DIR)/$(OS_ISO) -m $(QEMU_MEM)
+	@$(QEMU) $(QEMU_CONFIG)
 
 qemu-debug: all
-	@qemu-system-i386 -s -S -m $(QEMU_MEM) -cdrom $(BUILD_DIR)/$(OS_ISO) -monitor telnet::$(QEMU_MON_PORT),server,nowait &
+	@$(QEMU) $(QEMU_DEBUG_CONFIG)
 	@sleep 1
 	@$(TERMINAL) -e "telnet 127.0.0.1 $(QEMU_MON_PORT)"
 	@gdb -s $(BIN_DIR)/$(OS_BIN) -ex "target remote localhost:1234"

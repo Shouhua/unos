@@ -32,6 +32,7 @@ void mm_print_info() {
 	printf("PHeap start: 0x%x\nPHeap end: 0x%x\n", pheap_begin, pheap_end);
 }
 
+// TODO: 需要heap清理，因为根据malloc每次分配都会固定块的大小，当释放后块信息头还在那儿，需要全部看下，连续空块可以合并
 void free(void* mem) {
 	alloc_t* alloc = (mem - sizeof(alloc_t));
 	memory_used -= alloc->size + sizeof(alloc_t);

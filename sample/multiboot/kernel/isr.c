@@ -15,7 +15,7 @@
 
 isr_t interrupt_handlers[256];
 
-void isr_handler(registers_t regs)
+void isr_handler(register_t regs)
 {
     if (interrupt_handlers[regs.int_no] != 0)
     {
@@ -43,7 +43,7 @@ void ack_irq(int int_no)
 }
 
 // This gets called from our ASM interrupt handler stub.
-void irq_handler(registers_t regs)
+void irq_handler(register_t regs)
 {
 	// printf("h/w interrupt: %i\n", regs.int_no);
 

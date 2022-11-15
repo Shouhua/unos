@@ -11,6 +11,8 @@
 #include "kernel/timer.h"
 #include "kernel/tss.h"
 #include "kernel/mm/malloc.h"
+#include "kernel/network/pci.h"
+#include "kernel/network/rtl8139.h"
 
 // https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
 // https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
@@ -111,8 +113,12 @@ void kmain(multiboot_info_t * mb_info) {
 	init_timer(100);
 	init_keyboard();
 
-
 	register_timer_callback(print_jiffies, 3);
+
+	pci_init();
+	rtl8139_init();
+	
+	printf("[KERNEL] ALL DONE!!!\n");
 	for(;;);
 
 	// userland

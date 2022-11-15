@@ -182,7 +182,7 @@ page_t *get_page(uint32_t address, int make, page_directory_t *dir)
 	}
 }
 
-void page_fault(registers_t regs)
+void page_fault(register_t regs)
 {
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.

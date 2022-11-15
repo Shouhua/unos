@@ -8,6 +8,9 @@
 		"pmm.h": "c",
 		"timer.h": "c",
 		"malloc.h": "c",
-		"isr.h": "c"
+		"isr.h": "c",
+		"string.h": "c",
+		"rtl8139.h": "c",
+		"network_utils.h": "c"
 	}
 }

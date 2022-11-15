@@ -49,6 +49,6 @@ void* virt2phys(void* virt_addr);
 void vmm_map_page(void* phys, void* virt);
 bool switch_page_directory(pd_t *);
 void enable_paging(bool);
-void page_fault_handler(registers_t* regs);
+void page_fault_handler(register_t* regs);
 
 #endif
