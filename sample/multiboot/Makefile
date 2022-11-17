@@ -31,7 +31,9 @@ ASFLAGS = -f elf -i boot -g -F dwarf
 QEMU := qemu-system-i386
 QEMU_MON_PORT := 55555
 QEMU_MEM := 32M
-QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) -m $(QEMU_MEM) -serial stdio -netdev tap,helper=/usr/lib/qemu-bridge-helper,id=thor_net0 -device rtl8139,netdev=thor_net0,id=thor_nic0
+QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) -m $(QEMU_MEM) -serial stdio \
+	-netdev tap,helper=/usr/lib/qemu/qemu-bridge-helper,id=thor_net0 -device rtl8139,netdev=thor_net0,id=thor_nic0 \
+    -object filter-dump,id=thor_nic0,netdev=thor_net0,file=dump.dat
 QEMU_DEBUG_CONFIG := $(QEMU_CONFIG) -s -S -monitor telnet::$(QEMU_MON_PORT),server,nowait &
 
 INCLUDES := $(patsubst %, -I%, $(INCLUDES_DIR))
@@ -77,10 +79,10 @@ bochs: all
 	@bochs -q -f bochs.cfg
 
 qemu: all
-	@$(QEMU) $(QEMU_CONFIG)
+	@sudo $(QEMU) $(QEMU_CONFIG)
 
 qemu-debug: all
-	@$(QEMU) $(QEMU_DEBUG_CONFIG)
+	@sudo $(QEMU) $(QEMU_DEBUG_CONFIG)
 	@sleep 1
 	@$(TERMINAL) -e "telnet 127.0.0.1 $(QEMU_MON_PORT)"
 	@gdb -s $(BIN_DIR)/$(OS_BIN) -ex "target remote localhost:1234"

@@ -40,14 +40,14 @@ void receive_packet() {
 }
 
 void rtl8139_handler(__attribute__((unused))register_t * reg) {
-    //printf("RTL8139 interript was fired !!!! \n");
+    printf("RTL8139 interript was fired !!!! \n");
     uint16_t status = inw(rtl8139_device.io_base + 0x3e);
 
     if(status & TOK) {
         printf("Packet sent\n");
     }
     if (status & ROK) {
-        //printf("Received packet\n");
+        printf("Received packet\n");
         receive_packet();
     }
 

@@ -52,7 +52,7 @@ void kmain(multiboot_info_t * mb_info) {
 
 	char buf[64];
 	cpu_get_brand(buf);
-	printf("[KERNEL] CPU: %s\n", buf);
+	// printf("[KERNEL] CPU: %s\n", buf);
 
 	init_gdt();
 	init_idt();
@@ -60,14 +60,14 @@ void kmain(multiboot_info_t * mb_info) {
 
 	init_pmm(MEM_1MB + (mb_info->mem_upper << 10), &__kernel_end);
 
-	printf("[KERNEL] Mem: 0x%x KB, Extended Mem: 0x%x KB\n\x09Total Mem: 0x%x B\n",
-					mb_info->mem_lower,
-					mb_info->mem_upper,
-					(mb_info->mem_upper<<10) + 0x100000); // 可使用内存总数
+	// printf("[KERNEL] Mem: 0x%x KB, Extended Mem: 0x%x KB\n\x09Total Mem: 0x%x B\n",
+	// 				mb_info->mem_lower,
+	// 				mb_info->mem_upper,
+	// 				(mb_info->mem_upper<<10) + 0x100000); // 可使用内存总数
 
 	multiboot_memory_map_t* map = (multiboot_memory_map_t*)mb_info->mmap_addr;
 	uint8_t map_size = mb_info->mmap_length / sizeof(multiboot_memory_map_t);
-	printf("[PMM] Physical Memory Map:\n");
+	// printf("[PMM] Physical Memory Map:\n");
 	for (uint8_t i = 0; i < map_size; i++) {
 		// printf("\tBase: 0x%08x, len: 0x%08x B, type: %d(%s)\n",
 		// 				map[i].addr_low,
@@ -101,7 +101,7 @@ void kmain(multiboot_info_t * mb_info) {
 	init_paging();
 	vmm_map_page((void*)VGA_BUFFER_PADDR, (void*)VGA_BUFFER_VADDR);
 	fb_set_buffer((uint8_t*)VGA_BUFFER_VADDR);
-	printf("[VMM] Vmm DONE\n");
+	// printf("[VMM] Vmm DONE\n");
 
 	// 分配kernel heap
 	init_mm((uint32_t)&__kernel_end, 0xC0400000);
