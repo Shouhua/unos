@@ -33,8 +33,9 @@ QEMU := qemu-system-i386
 QEMU_MON_PORT := 55555
 QEMU_MEM := 32M
 QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) -m $(QEMU_MEM) -serial stdio \
-	-netdev tap,helper=/usr/lib/qemu/qemu-bridge-helper,id=thor_net0 -device rtl8139,netdev=thor_net0,id=thor_nic0 \
-    -object filter-dump,id=thor_nic0,netdev=thor_net0,file=dump.dat
+	-netdev tap,id=u1,helper=/usr/lib/qemu/qemu-bridge-helper -device rtl8139,netdev=u1,id=f1 \
+	-object filter-dump,id=f1,netdev=u1,file=dump.dat
+# -nic tap,mac=52:54:0:12:34:56,model=rtl8139,helper=/usr/lib/qemu/qemu-bridge-helper
 QEMU_DEBUG_CONFIG := $(QEMU_CONFIG) -s -S -monitor telnet::$(QEMU_MON_PORT),server,nowait &
 
 INCLUDES := $(patsubst %, -I%, $(INCLUDES_DIR))
@@ -84,10 +85,10 @@ qemu: all
 
 qemu-debug: all
 	@sudo $(QEMU) $(QEMU_DEBUG_CONFIG)
-	@sleep 1
+	@sleep 3
 	@$(TERMINAL) -e "telnet 127.0.0.1 $(QEMU_MON_PORT)"
 	@gdb -s $(BIN_DIR)/$(OS_BIN) -ex "target remote localhost:1234"
 
 clean:
-	@sudo rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)
 	@sleep 1

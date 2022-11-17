@@ -5,6 +5,7 @@
 #include "lib/string.h"
 #include "kernel/io.h"
 #include "kernel/isr.h"
+#include "kernel/idt.h"
 
 pci_dev_t pci_rtl8139_device;
 rtl8139_dev_t rtl8139_device;
@@ -133,7 +134,13 @@ void rtl8139_init() {
 
     // Register and enable network interrupts
     uint32_t irq_num = pci_read(pci_rtl8139_device, PCI_INTERRUPT_LINE);
-    register_interrupt_handler(32 + irq_num, rtl8139_handler);
+
+    int8_t irq_port = 32 + irq_num;
+    enable_irq(irq_port);
+    register_interrupt_handler(irq_port, rtl8139_handler);
+
+    uint32_t interrupt_pin = pci_read(pci_rtl8139_device, PCI_INTERRUPT_PIN);
+    printf("interrupt_pin: %d\n", interrupt_pin);
     printf("Registered irq interrupt for rtl8139, irq num = %d\n", irq_num);
 
     read_mac_addr();

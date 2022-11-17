@@ -43,6 +43,7 @@ typedef union pci_dev {
 #define PCI_BAR4                 0x20
 #define PCI_BAR5                 0x24
 #define PCI_INTERRUPT_LINE       0x3C
+#define PCI_INTERRUPT_PIN       0x3D
 #define PCI_SECONDARY_BUS        0x09
 
 // Device type

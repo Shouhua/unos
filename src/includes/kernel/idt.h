@@ -84,4 +84,7 @@ extern void irq15();
 
 void init_idt();
 
+void enable_irq(int8_t irq_port);
+void disable_irq(int8_t irq_port);
+
 #endif

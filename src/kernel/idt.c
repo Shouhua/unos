@@ -1,6 +1,7 @@
 #include "kernel/idt.h"
 #include "kernel/io.h"
 #include "lib/string.h"
+#include "lib/log.h"
 
 #define IDT_SELECTOR 0x08
 
@@ -94,6 +95,9 @@ static void PIC_remap(uint8_t offset1, uint8_t offset2)
 
 	outb(PIC1_DATA, a1); // restore saved masks.
 	outb(PIC2_DATA, a2);
+	// 必须要使用0，使用上面保存的masks，rtl8139不能收到中断
+	// outb(PIC1_DATA, 0); // restore saved masks.
+	// outb(PIC2_DATA, 0);
 }
 
 static void idt_set_gate(
@@ -205,6 +209,35 @@ void init_idt()
 
 	// enable hardware interrupts
 	asm volatile("sti");
-	if (are_interrupts_enabled())
-		printf("[IDT] Interrupts enabled.\n");
+	if (!are_interrupts_enabled())
+		// printf("[IDT] Interrupts enabled.\n");
+		PANIC("Interrupt are disabed");
+}
+
+void enable_irq(int8_t irq_port) {
+	uint8_t port;
+	uint8_t value;
+
+	if(irq_port < 8) {
+			port = PIC1_DATA;
+	} else {
+			port = PIC2_DATA;
+			irq_port -= 8;
+	}
+	value = inb(port) & ~(1 << irq_port);
+	outb(port, value);  
+}
+
+void disable_irq(int8_t irq_port) {
+	uint8_t port;
+	uint8_t value;
+
+	if(irq_port < 8) {
+		port = PIC1_DATA;
+	} else {
+		port = PIC2_DATA;
+		irq_port -= 8;
+	}
+	value = inb(port) | (1 << irq_port);
+	outb(port, value);
 }
