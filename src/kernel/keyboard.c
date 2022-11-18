@@ -350,7 +350,7 @@ void keyboard_cb()
 
 void init_keyboard()
 {
-	printf("initializing keyboard.\n");
+	// printf("initializing keyboard.\n");
 	// empty buffer in case it's not empty already
 	// char c;
 	// while ((c = inb(KBD_DATA_PORT))) {

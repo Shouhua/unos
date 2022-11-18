@@ -41,14 +41,14 @@ void receive_packet() {
 }
 
 void rtl8139_handler(__attribute__((unused))register_t * reg) {
-    printf("RTL8139 interript was fired !!!! \n");
+    // printf("RTL8139 interript was fired !!!! \n");
     uint16_t status = inw(rtl8139_device.io_base + 0x3e);
 
     if(status & TOK) {
         printf("Packet sent\n");
     }
     if (status & ROK) {
-        printf("Received packet\n");
+        // printf("Received packet\n");
         receive_packet();
     }
 
@@ -66,7 +66,7 @@ void read_mac_addr() {
 
     rtl8139_device.mac_addr[4] = mac_part2 >> 0;
     rtl8139_device.mac_addr[5] = mac_part2 >> 8;
-    printf("MAC Address: %01x:%01x:%01x:%01x:%01x:%01x\n", rtl8139_device.mac_addr[0], rtl8139_device.mac_addr[1], rtl8139_device.mac_addr[2], rtl8139_device.mac_addr[3], rtl8139_device.mac_addr[4], rtl8139_device.mac_addr[5]);
+    // printf("MAC Address: %01x:%01x:%01x:%01x:%01x:%01x\n", rtl8139_device.mac_addr[0], rtl8139_device.mac_addr[1], rtl8139_device.mac_addr[2], rtl8139_device.mac_addr[3], rtl8139_device.mac_addr[4], rtl8139_device.mac_addr[5]);
 }
 
 void get_mac_addr(uint8_t * src_mac_addr) {
@@ -97,7 +97,7 @@ void rtl8139_init() {
     // Get io base or mem base by extracting the high 28/30 bits
     rtl8139_device.io_base = ret & (~0x3);
     rtl8139_device.mem_base = ret & (~0xf);
-    printf("rtl8139 use %s access (base: %x)\n", (rtl8139_device.bar_type == 0)? "mem based":"port based", (rtl8139_device.bar_type != 0)?rtl8139_device.io_base:rtl8139_device.mem_base);
+    // printf("rtl8139 use %s access (base: %x)\n", (rtl8139_device.bar_type == 0)? "mem based":"port based", (rtl8139_device.bar_type != 0)?rtl8139_device.io_base:rtl8139_device.mem_base);
 
     // Set current TSAD
     rtl8139_device.tx_cur = 0;
@@ -139,9 +139,9 @@ void rtl8139_init() {
     enable_irq(irq_port);
     register_interrupt_handler(irq_port, rtl8139_handler);
 
-    uint32_t interrupt_pin = pci_read(pci_rtl8139_device, PCI_INTERRUPT_PIN);
-    printf("interrupt_pin: %d\n", interrupt_pin);
-    printf("Registered irq interrupt for rtl8139, irq num = %d\n", irq_num);
+    // uint32_t interrupt_pin = pci_read(pci_rtl8139_device, PCI_INTERRUPT_PIN);
+    // printf("interrupt_pin: %d\n", interrupt_pin);
+    // printf("Registered irq interrupt for rtl8139, irq num = %d\n", irq_num);
 
     read_mac_addr();
 }

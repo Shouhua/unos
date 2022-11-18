@@ -37,6 +37,7 @@ void free(void* mem) {
 	alloc_t* alloc = (mem - sizeof(alloc_t));
 	memory_used -= alloc->size + sizeof(alloc_t);
 	alloc->status = 0;
+	printf("Free memeory: %x, size: %d\n", mem, alloc->size + sizeof(alloc_t));
 }
 
 void* malloc(uint32_t size) {

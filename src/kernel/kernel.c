@@ -118,7 +118,7 @@ void kmain(multiboot_info_t * mb_info) {
 	pci_init();
 	rtl8139_init();
 	
-	printf("[KERNEL] ALL DONE!!!\n");
+	// printf("[KERNEL] ALL DONE!!!\n");
 	// asm volatile("int $0x2b");
 	for(;;);
 

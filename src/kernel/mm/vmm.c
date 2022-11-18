@@ -20,8 +20,11 @@ void* virt2phys(void* virt_addr) {
 	// pde_t table = cur_dir->entries[page_dir_idx];
 	// uint32_t t = ((pt_t*)(table|0xFFFFFFF8))->entries[page_tbl_idx];
 	// t = (t << 12) + page_frame_offset;
-	uint32_t t = (uint32_t*)virt_addr - (uint32_t*)0xC0000000;
-	return (void*)t;
+
+	// 下面式子virt_addr: 0xc010d050,得到结果0x43414, TODO: 不懂
+	// uint32_t t = (uint32_t*)virt_addr - (uint32_t*)0xC0000000;
+	// return (void*)t;
+	return (void*)(virt_addr - 0xC0000000);
 }
 
 inline pte_t* vmm_pt_lookup_entry(pt_t* p, uint32_t virt_addr)

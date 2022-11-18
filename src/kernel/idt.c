@@ -117,7 +117,7 @@ static void idt_set_gate(
 
 void init_idt()
 {
-	printf("[IDT] Begin init idt\n");
+	// printf("[IDT] Begin init idt\n");
 
 	// printf("cpuHasMSR=%i\n", cpuHasMSR());
 	// printf("Disabling APIC...\n");
