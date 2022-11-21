@@ -1,5 +1,6 @@
 #include "lib/stdint.h"
 #include "kernel/framebuffer.h"
+#include "lib/string.h"
 
 char *itoa(int32_t val, char *buf, int radix)
 {
@@ -112,6 +113,23 @@ void *memcpy(void *dst, void const *src, int n)
 	return ret;
 }
 
+/*
+ * Scroll down by one line, copy the line 1 to line 0, line 2 to line 1...... and delete the last line
+ * */
+// TODO
+void scroll() {
+    // // Move up
+    // void * start = (void*)SCREEN + 1 * WIDTH * 2;
+    // uint32_t size = curr_y * WIDTH * 2;
+    // if(curr_y < 25)
+    //     return;
+    // memcpy(SCREEN, start, size);
+    // // Delete
+    // start = (void*)SCREEN + size;
+    // memsetw(start, PAINT(0x20, DEFAULT_COLOR), WIDTH);
+    // curr_y--;
+}
+
 int printf(const char *format, ...)
 {
 	char **arg = (char **)&format;
@@ -174,4 +192,124 @@ int printf(const char *format, ...)
 	}
 
 	return 0;
+}
+
+/*
+ * memset by word(16 bit)
+ * */
+uint16_t *memsetw(uint16_t *dest, uint16_t val, uint32_t count)
+{
+    uint16_t *temp = (uint16_t *)dest;
+    for( ; count != 0; count--) *temp++ = val;
+    return dest;
+}
+
+/*
+ * memset by double word(32 bit)
+ * */
+uint32_t *memsetdw(uint32_t *dest, uint32_t val, uint32_t count)
+{
+    uint32_t *temp = (uint32_t *)dest;
+    for( ; count != 0; count--) *temp++ = val;
+    return dest;
+}
+
+// int strlen(const char * s) {
+//     int len = 0;
+//     while(*s++)
+//         len++;
+//     return len;
+// }
+char *strncpy(char *destString, const char *sourceString,int maxLength)
+{
+    unsigned count;
+
+    if ((destString == (char *) NULL) || (sourceString == (char *) NULL))
+    {
+        return (destString = NULL);
+    }
+
+    if (maxLength > 255)
+        maxLength = 255;
+
+    for (count = 0; (int)count < (int)maxLength; count ++)
+    {
+        destString[count] = sourceString[count];
+
+        if (sourceString[count] == '\0')
+            break;
+    }
+
+    if (count >= 255)
+    {
+        return (destString = NULL);
+    }
+
+    return (destString);
+}
+
+int strcmp(const char *dst, char *src)
+{
+    int i = 0;
+
+    while ((dst[i] == src[i])) {
+        if (src[i++] == 0)
+            return 0;
+    }
+
+    return 1;
+}
+
+char * strstr(const char *in, const char *str) {
+    char c;
+    uint32_t len;
+
+    c = *str++;
+    if (!c)
+        return (char *) in;
+
+    len = strlen(str);
+    do {
+        char sc;
+
+        do {
+            sc = *in++;
+            if (!sc)
+                return (char *) 0;
+        } while (sc != c);
+    } while (strncmp(in, str, len) != 0);
+
+    return (char *) (in - 1);
+}
+int strcpy(char *dst,const char *src)
+{
+    int i = 0;
+    while ((*dst++ = *src++) != 0)
+        i++;
+    return i;
+}
+
+
+void strcat(void *dest,const void *src)
+{
+    char * end = (char*)dest + strlen(dest);
+    memcpy((char*)end,(char*)src,strlen((char*)src));
+    end = end + strlen((char*)src);
+    *end = '\0';
+}
+
+int strncmp( const char* s1, const char* s2, int c ) {
+    int result = 0;
+
+    while ( c ) {
+        result = *s1 - *s2++;
+
+        if ( ( result != 0 ) || ( *s1++ == 0 ) ) {
+            break;
+        }
+
+        c--;
+    }
+
+    return result;
 }

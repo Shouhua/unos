@@ -13,5 +13,7 @@ void init_mm(uint32_t start, uint32_t end);
 void* malloc(uint32_t size);
 void free(void* mem);
 void mm_print_info();
+void* kcalloc(uint32_t num, uint32_t size);
+void kfree(void * ptr);
 
 #endif

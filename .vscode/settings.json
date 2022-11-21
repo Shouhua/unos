@@ -11,6 +11,8 @@
 		"isr.h": "c",
 		"string.h": "c",
 		"rtl8139.h": "c",
-		"network_utils.h": "c"
+		"network_utils.h": "c",
+		"process.h": "c",
+		"syscall.h": "c"
 	}
 }

@@ -13,6 +13,7 @@
 #include "kernel/mm/malloc.h"
 #include "kernel/network/pci.h"
 #include "kernel/network/rtl8139.h"
+#include "kernel/syscall.h"
 
 // https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
 // https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
@@ -45,6 +46,16 @@ void print_jiffies() {
 	fb_set_color(FB_RED, FB_BLACK);
 	printf("[Kernel] Time callback jiffies: %d\n", jiffies);
 	fb_reset_color();
+}
+
+void test_syscall() {
+	char* helo = "syscal printf: helo syscall!\n";
+
+	asm volatile (" \
+		mov $0, %%eax; \
+		mov %0, %%ebx; \
+		int $0x80; \
+		" : :"g"(helo):"eax","ebx");
 }
 
 void kmain(multiboot_info_t * mb_info) {
@@ -110,18 +121,19 @@ void kmain(multiboot_info_t * mb_info) {
 	// uint32_t *ptr = (uint32_t *)0xA0000000;
 	// uint32_t do_page_fault = *ptr;
 	// printf("%x\n", do_page_fault);
-	init_timer(100);
-	init_keyboard();
+	// init_timer(100);
+	// init_keyboard();
 
-	register_timer_callback(print_jiffies, 3);
+	// register_timer_callback(print_jiffies, 3);
 
-	pci_init();
-	rtl8139_init();
+	// pci_init();
+	// rtl8139_init();
 	
 	// printf("[KERNEL] ALL DONE!!!\n");
 	// asm volatile("int $0x2b");
-	for(;;);
 
+	syscall_init();
+	test_syscall();
 	// userland
 	// uint32_t esp;
 	// asm volatile("mov %%esp, %0" : "=r"(esp));

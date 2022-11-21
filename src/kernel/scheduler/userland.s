@@ -1,5 +1,8 @@
 global enter_userland
 
+; 模拟processor入栈参数
+; 使用iret实现特权级别转移，0 -> 3
+; 保证当前stack：ss, esp, eflags, cs, eip
 enter_userland:
 	cli
 	mov ax, 0x23	; user mode data selector is 0x20 (GDT entry 3). Also sets RPL to 3
@@ -17,8 +20,9 @@ enter_userland:
 	push eax
 
 	push 0x1b		; CS, user mode code selector is 0x18. With RPL 3 this is 0x1b
-	lea eax, [a]		; EIP first
+	lea eax, [user_start]		; EIP first
 	push eax
 	iretd
-a:
+user_start:
 	add esp, 4 ; fix stack
+	ret

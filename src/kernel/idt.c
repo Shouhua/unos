@@ -70,10 +70,10 @@ static inline bool are_interrupts_enabled()
 // master 8059A 0x20-0x27, slave 8059A 0x28-0x2f
 static void PIC_remap(uint8_t offset1, uint8_t offset2)
 {
-	uint8_t a1, a2;
+	// uint8_t a1, a2;
 
-	a1 = inb(PIC1_DATA); // save masks
-	a2 = inb(PIC2_DATA);
+	// a1 = inb(PIC1_DATA); // save masks
+	// a2 = inb(PIC2_DATA);
 
 	outb(PIC1_COMMAND, ICW1_INIT + ICW1_ICW4); // starts the initialization sequence (in cascade mode)
 	io_wait();
@@ -93,11 +93,11 @@ static void PIC_remap(uint8_t offset1, uint8_t offset2)
 	outb(PIC2_DATA, ICW4_8086);
 	io_wait();
 
-	outb(PIC1_DATA, a1); // restore saved masks.
-	outb(PIC2_DATA, a2);
+	// outb(PIC1_DATA, a1); // restore saved masks.
+	// outb(PIC2_DATA, a2);
 	// 必须要使用0，使用上面保存的masks，rtl8139不能收到中断
-	// outb(PIC1_DATA, 0); // restore saved masks.
-	// outb(PIC2_DATA, 0);
+	outb(PIC1_DATA, 0); // restore saved masks.
+	outb(PIC2_DATA, 0);
 }
 
 static void idt_set_gate(
@@ -169,8 +169,10 @@ void init_idt()
 	idt_set_gate(30, isr30, IDT_SELECTOR, flags);
 	idt_set_gate(31, isr31, IDT_SELECTOR, flags);
 
+	idt_set_gate(128, isr128, IDT_SELECTOR, flags);
+
 	// Remap the irq table
-	printf("[IDT] Remapping IRQs\n");
+	// printf("[IDT] Remapping IRQs\n");
 	PIC_remap(0x20, 0x28);
 	// ICW1(Initialization Command Word)
 	// outb(0x20, 0x11);

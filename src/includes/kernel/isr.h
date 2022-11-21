@@ -20,12 +20,15 @@
 #define IRQ13 45
 #define IRQ14 46
 #define IRQ15 47
+#define ISR128 128
 
 typedef struct registers
 {
 	uint32_t ds;										// data segment
 	uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // pushed by pusha
+	// interrupt.s中没有err_code会压入0
 	uint32_t int_no, err_code;						// interrupt number & error code
+	// 有特权级别变化时候，processor会从tss中拿到当前的ss，esp存入，没有变化不会压入ss，esp
 	uint32_t eip, cs, eflags, useresp, ss;			// pushed by processor
 } register_t;
 

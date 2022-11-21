@@ -180,3 +180,54 @@ void init_paging()
 	switch_page_directory(dir);
 	enable_paging(true);
 }
+/*
+ * Copy a page directory
+ * */
+// void copy_page_directory(pd_t * dst, pd_t * src) {
+//     for(uint32_t i = 0; i < 1024; i++) {
+//         if(kpage_dir->ref_tables[i] == src->ref_tables[i]) {
+//             // Link kernel pages
+//             dst->tables[i] = src->tables[i];
+//             dst->ref_tables[i] = src->ref_tables[i];
+//         }
+//         else {
+//             // For non-kernel pages, copy the pages (for example, when forking process, you don't want the parent process mess with child process's memory)
+//             dst->ref_tables[i] = copy_page_table(src, dst, i, src->ref_tables[i]);
+//             uint32_t phys = (uint32_t)virtual2phys(src, dst->ref_tables[i]);
+//             dst->tables[i].frame = phys >> 12;
+//             dst->tables[i].user = 1;
+//             dst->tables[i].rw = 1;
+//             dst->tables[i].present = 1;
+//         }
+//     }
+// }
+// /*
+//  * Copy a page directory
+//  * */
+// page_table_t * copy_page_table(pd_t * src_page_dir, pd_t * dst_page_dir, uint32_t page_dir_idx, page_table_t * src) {
+//     page_table_t * table = (page_table_t*)kmalloc_a(sizeof(page_table_t));
+//     for(int i = 0; i < 1024; i++) {
+//         if(!table->pages[i].frame)
+//             continue;
+//         // Source frame's virtual address
+//         uint32_t src_virtual_address = (page_dir_idx << 22) | (i << 12) | (0);
+//         // Destination frame's virtual address
+//         uint32_t dst_virtual_address = src_virtual_address;
+//         // Temporary virtual address in current virtual address space
+//         uint32_t tmp_virtual_address = 0;
+
+//         // Allocate a frame in destination page table
+//         allocate_page(dst_page_dir, dst_virtual_address, 0, 0, 1);
+//         // Now I want tmp_virtual_address and dst_virtual_address both points to the same frame
+//         allocate_page(src_page_dir, tmp_virtual_address, (uint32_t)virtual2phys(dst_page_dir, (void*)dst_virtual_address), 0, 1);
+//         if (src->pages[i].present) table->pages[i].present = 1;
+//         if (src->pages[i].rw)      table->pages[i].rw = 1;
+//         if (src->pages[i].user)    table->pages[i].user = 1;
+//         if (src->pages[i].accessed)table->pages[i].accessed = 1;
+//         if (src->pages[i].dirty)   table->pages[i].dirty = 1;
+//         memcpy((void*)tmp_virtual_address, (void*)src_virtual_address, PAGE_SIZE);
+//         // Unlink frame
+//         free_page(src_page_dir, tmp_virtual_address, 0);
+//     }
+//     return table;
+// }

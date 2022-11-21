@@ -6,8 +6,8 @@ extern irq_handler
 global isr%1
 isr%1:
   cli                   ; disable interrupts
-  push byte 0           ; push dummy error code
-  push byte %1          ; push the interrupt number
+  push dword 0           ; push dummy error code
+  push dword %1          ; push the interrupt number
   jmp isr_common_stub  ; go to common handler
 %endmacro
 
@@ -30,6 +30,7 @@ isr%1:
     jmp irq_common_stub
 %endmacro
 
+; iret返回的时候，stack要保证跟进入handler时候一样，下面的代码pop自己压入的内容
 isr_common_stub:
   pusha                 ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
 
@@ -69,7 +70,7 @@ irq_common_stub:
   mov fs, ax
   mov gs, ax
 
-  call irq_handler
+  call irq_handler ; TODO: stack content？？？
 
   pop ebx               ; reload the original data segment descriptor
   mov ds, bx
@@ -132,3 +133,4 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
+ISR_NOERRCODE 128

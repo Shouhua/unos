@@ -20,7 +20,7 @@ void init_mm(uint32_t start, uint32_t end) {
 	heap_end = pheap_begin;
 	memset((uint8_t*)heap_begin, 0, heap_end - heap_begin);
 	pheap_desc = (uint8_t*)malloc(MAX_PAGE_ALIGNED_ALLOCS);
-	printf("[MALLOC] Kernel heap start at 0x%x\n", last_alloc);
+	// printf("[MALLOC] Kernel heap start at 0x%x\n", last_alloc);
 }
 
 void mm_print_info() {
@@ -96,7 +96,7 @@ void* malloc(uint32_t size) {
 		last_alloc += size;
 		last_alloc += sizeof(alloc_t);
 		last_alloc += 4;
-		printf("Allocated %d bytes from 0x%x to 0x%x\n", size, (uint32_t)alloc + sizeof(alloc_t), last_alloc);
+		// printf("Allocated %d bytes from 0x%x to 0x%x\n", size, (uint32_t)alloc + sizeof(alloc_t), last_alloc);
 		memory_used += size + 4 + sizeof(alloc_t);
 		memset((char *)((uint32_t)alloc + sizeof(alloc_t)), 0, size);
 		return (void *)((uint32_t)alloc + sizeof(alloc_t));
@@ -110,4 +110,19 @@ void* malloc(uint32_t size) {
 		}
 		printf("Allocated %d bytes from 0x%x to 0x%x\n", size, ret, last_alloc);
 		return ret;*/
+}
+
+/*
+	malloc a s block and memset
+*/
+void* kcalloc(uint32_t num, uint32_t size) {
+    void * ptr = malloc(num * size);
+    memset(ptr, 0, num*size);
+    return ptr;
+}
+/*
+wrapper function for free
+*/
+void kfree(void * ptr) {
+    free(ptr);
 }
