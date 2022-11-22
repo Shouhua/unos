@@ -33,7 +33,7 @@ QEMU := qemu-system-i386
 QEMU_MON_PORT := 55555
 QEMU_MEM := 32M
 QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) -m $(QEMU_MEM) -serial stdio \
-	-netdev tap,id=b1 -device rtl8139,netdev=b1 # 详情可以查看qemu-system-i386 -h
+	-netdev tap,id=b1,script=no,downscript=no -device rtl8139,netdev=b1 # 详情可以查看qemu-system-i386 -h
 # -netdev tap,id=u1,helper=/usr/lib/qemu/qemu-bridge-helper -device rtl8139,netdev=u1,id=f1 \
 # -object filter-dump,id=f1,netdev=u1,file=dump.dat
 # -nic tap,mac=52:54:0:12:34:56,model=rtl8139,helper=/usr/lib/qemu/qemu-bridge-helper

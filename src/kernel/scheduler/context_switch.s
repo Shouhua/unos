@@ -27,23 +27,24 @@ user_regs_switch:
     mov fs, ax
     mov gs, ax
     
-    push 0x23
+    push 0x23 ; 压入ss
     ; Push user esp
     mov eax, [ebp + 16]
-    push eax
+    push eax ; 压入esp
     mov eax, [ebp + 32]
-    push eax
+    push eax ; 压入eflags
     ;pushfd
-    push 0x1b
+    push 0x1b ; 压入cs
     ; Push eip
-    mov eax, [ebp + 40]
+    mov eax, [ebp + 40] ; 压入eip
     push eax
     ; Enter usermode from here(make sure the registers are restored correctly for the user process !)
 
-    ; Load eax here
-    mov eax, [ebp + 0]
-    ; Now, restore ebp
-    mov ebp, [ebp + 20]
+    ; TODO 为什么要有下面的压入数据
+    ; ; Load eax here
+    ; mov eax, [ebp + 0]
+    ; ; Now, restore ebp
+    ; mov ebp, [ebp + 20]
     ; sti
     iret
 

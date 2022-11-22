@@ -3,6 +3,7 @@
 #include "kernel/io.h"
 #include "lib/string.h"
 #include "lib/log.h"
+#include "kernel/pic.h"
 
 #define PIC1 0x20 /* IO base address for master PIC */
 #define PIC2 0xA0 /* IO base address for slave PIC */
@@ -29,24 +30,10 @@ void isr_handler(register_t regs)
     }
 }
 
-void ack_irq(int int_no)
-{
-	// Send an EOI (end of interrupt) signal to the PICs.
-	// If this interrupt involved the slave.
-	if (int_no >= 40)
-	{
-		// Send reset signal to slave.
-		outb(PIC2_COMMAND, PIC_EOI);
-	}
-	// Send reset signal to master. (As well as slave, if necessary).
-	outb(PIC1_COMMAND, PIC_EOI);
-}
-
 // This gets called from our ASM interrupt handler stub.
 void irq_handler(register_t regs)
 {
 	// printf("h/w interrupt: %i\n", regs.int_no);
-
 	ack_irq(regs.int_no);
 
 	if (interrupt_handlers[regs.int_no] != 0)

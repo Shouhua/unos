@@ -4,6 +4,7 @@
 #include "kernel/mm/vmm.h"
 #include "lib/string.h"
 #include "lib/log.h"
+#include "kernel/mm/malloc.h"
 
 #define PAGE_DIRECTORY_INDEX(x) (((uint32_t)(x) >> 22) & 0x3ff)
 #define PAGE_TABLE_INDEX(x) (((uint32_t)(x) >> 12) & 0x3ff)
@@ -21,9 +22,9 @@ void* virt2phys(void* virt_addr) {
 	// uint32_t t = ((pt_t*)(table|0xFFFFFFF8))->entries[page_tbl_idx];
 	// t = (t << 12) + page_frame_offset;
 
-	// 下面式子virt_addr: 0xc010d050,得到结果0x43414, TODO: 不懂
+	// 下面式子virt_addr: 0xc010d050,得到结果0x43414
+	// NOTICE: 因为使用指针，所以得到的值是(0xC010D050 - 0xC0000000)/4, C语言经典指针计算
 	// uint32_t t = (uint32_t*)virt_addr - (uint32_t*)0xC0000000;
-	// return (void*)t;
 	return (void*)(virt_addr - 0xC0000000);
 }
 
@@ -201,11 +202,11 @@ void init_paging()
 //         }
 //     }
 // }
-// /*
-//  * Copy a page directory
-//  * */
-// page_table_t * copy_page_table(pd_t * src_page_dir, pd_t * dst_page_dir, uint32_t page_dir_idx, page_table_t * src) {
-//     page_table_t * table = (page_table_t*)kmalloc_a(sizeof(page_table_t));
+/*
+ * Copy a page directory
+ * */
+// pt_t* copy_page_table(pd_t* src_page_dir, pd_t* dst_page_dir, uint32_t page_dir_idx, pd_t* src) {
+//     pt_t* table = (pt_t*)(sizeof(pt_t));
 //     for(int i = 0; i < 1024; i++) {
 //         if(!table->pages[i].frame)
 //             continue;

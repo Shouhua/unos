@@ -1,13 +1,15 @@
 #include "kernel/syscall.h"
 #include "kernel/isr.h"
 #include "lib/string.h"
+#include "kernel/process.h"
 
 void * syscall_table[NUM_SYSCALLS] = {
     // vfs_create_file,
-    // schedule,
+    0, // 占位 vfs_create_file
+    schedule,
     printf,
-    // create_process_from_routine,
-    // _exit
+    create_process_from_routine,
+    _exit
 };
 
 void syscall_dispatcher(register_t * regs) {

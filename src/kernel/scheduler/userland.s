@@ -25,4 +25,11 @@ enter_userland:
 	iretd
 user_start:
 	add esp, 4 ; fix stack
+	mov eax, 0
+	mov ebx, user_land_str
+	int 0x80
+.loop:
+	jmp .loop
 	ret
+
+user_land_str: db 'hello from user land', 0x0d, 0

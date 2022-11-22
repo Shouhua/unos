@@ -15,7 +15,7 @@
 typedef void (*time_callback)();
 typedef struct time_list_node {
 	time_callback callback;
-	uint32_t sec;	
+	double sec;	
 	uint32_t t;
 	struct time_list_node* next;
 } time_list_node_t;
@@ -24,12 +24,12 @@ uint32_t jiffies = 0;
 uint16_t frequency_g = 0;
 time_list_node_t* head = NULL;
 
-void sleep(int sec) {
+void sleep(double sec) {
 	uint32_t end = jiffies + sec * frequency_g;
 	while(jiffies < end);
 }
 
-void register_timer_callback(timer_callback callback, uint32_t sec) {
+void register_timer_callback(timer_callback callback, double sec) {
 	uint32_t jiffy = jiffies + sec * frequency_g;
 	time_list_node_t* node = (time_list_node_t*)malloc(sizeof(time_list_node_t));
 	node->callback = callback;

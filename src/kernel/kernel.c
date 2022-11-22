@@ -14,6 +14,7 @@
 #include "kernel/network/pci.h"
 #include "kernel/network/rtl8139.h"
 #include "kernel/syscall.h"
+#include "kernel/process.h"
 
 // https://stackoverflow.com/questions/8398755/access-symbols-defined-in-the-linker-script-by-application
 // https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
@@ -21,7 +22,9 @@
 extern uint32_t __kernel_start;
 extern uint32_t __kernel_end;
 
-extern void enter_userland();
+extern void enter_userland(uint32_t*);
+extern void spinlock_lock(uint32_t*);
+extern void spinlock_unlock(uint32_t*);
 
 char * get_mem_type_str(multiboot_uint32_t type) {
 	if(type == MULTIBOOT_MEMORY_AVAILABLE) {
@@ -56,6 +59,37 @@ void test_syscall() {
 		mov %0, %%ebx; \
 		int $0x80; \
 		" : :"g"(helo):"eax","ebx");
+}
+
+void user_process2() {
+    // uint32_t lock = 0;
+    while(1) {
+        for(int i = 0; i < 10000; i++) {
+            for(int j= 0; j < 2000; j++) {
+
+            }
+        }
+        // spinlock_lock(&lock);
+        printf("hi there2\n");
+        // spinlock_unlock(&lock);
+    }
+}
+
+void user_process() {
+    // uint32_t lock = 0;
+    for(int i = 0; i < 2; i++) {
+        create_process_from_routine(user_process2, "user process2");
+    }
+    while(1) {
+        for(int i = 0; i < 10000; i++) {
+            for(int j= 0; j < 2000; j++) {
+
+            }
+        }
+        // spinlock_lock(&lock);
+        printf("hi there, user_process\n");
+        // spinlock_unlock(&lock);
+    }
 }
 
 void kmain(multiboot_info_t * mb_info) {
@@ -121,7 +155,7 @@ void kmain(multiboot_info_t * mb_info) {
 	// uint32_t *ptr = (uint32_t *)0xA0000000;
 	// uint32_t do_page_fault = *ptr;
 	// printf("%x\n", do_page_fault);
-	// init_timer(100);
+	init_timer(100);
 	// init_keyboard();
 
 	// register_timer_callback(print_jiffies, 3);
@@ -132,8 +166,20 @@ void kmain(multiboot_info_t * mb_info) {
 	// printf("[KERNEL] ALL DONE!!!\n");
 	// asm volatile("int $0x2b");
 
+	process_init();
 	syscall_init();
-	test_syscall();
+
+	uint32_t esp;
+	asm volatile("mov %%esp, %0" : "=r"(esp));
+	tss_set_stack(0x10, esp);
+
+	// Start the first process
+	create_process_from_routine(user_process, "user process");
+
+	printf("\nDone!\n");
+	for(;;);
+
+	// test_syscall();
 	// userland
 	// uint32_t esp;
 	// asm volatile("mov %%esp, %0" : "=r"(esp));

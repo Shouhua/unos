@@ -5,7 +5,7 @@
 #include "lib/string.h"
 #include "kernel/io.h"
 #include "kernel/isr.h"
-#include "kernel/idt.h"
+#include "kernel/pic.h"
 
 pci_dev_t pci_rtl8139_device;
 rtl8139_dev_t rtl8139_device;

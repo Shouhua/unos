@@ -37,8 +37,6 @@ typedef struct registers
 // first parameter.
 typedef void (*isr_t)(register_t*);
 
-void ack_irq(int32_t int_no);
-
 void register_interrupt_handler(uint32_t n, isr_t handler);
 extern isr_t interrupt_handlers[256];
 
