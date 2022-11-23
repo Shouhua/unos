@@ -16,8 +16,7 @@ void syscall_dispatcher(register_t * regs) {
     if(regs->eax >= NUM_SYSCALLS) return;
     void * system_api = syscall_table[regs->eax];
     int ret;
-		// TODO
-    // memcpy(&saved_context, regs, sizeof(register_t));
+    memcpy(&saved_context, regs, sizeof(register_t));
     asm volatile (" \
      push %1; \
      push %2; \

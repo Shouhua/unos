@@ -4,6 +4,7 @@
 #include "kernel/io.h"
 #include "lib/log.h"
 #include "kernel/mm/malloc.h"
+#include "kernel/process.h"
 
 #define PIT_TIMER_MAX_HZ 1193180
 #define PIT_DATA_PORT0 0x40
@@ -12,41 +13,38 @@
 #define PIT_COMMAND_PORT 0x43
 #define PIT_REPEAT 0x36
 
-typedef void (*time_callback)();
-typedef struct time_list_node {
-	time_callback callback;
-	double sec;	
-	uint32_t t;
-	struct time_list_node* next;
-} time_list_node_t;
-
-uint32_t jiffies = 0;
+uint32_t jiffies_g = 0;
 uint16_t frequency_g = 0;
 time_list_node_t* head = NULL;
 
 void sleep(double sec) {
-	uint32_t end = jiffies + sec * frequency_g;
-	while(jiffies < end);
+	uint32_t end = jiffies_g + sec * frequency_g;
+	while(jiffies_g < end);
 }
 
 void register_timer_callback(timer_callback callback, double sec) {
-	uint32_t jiffy = jiffies + sec * frequency_g;
+	// TODO 不知道为什么处理double，分开写就可以，jiffies_g + sec * frequency_g就是不行报错，#6 error code 0
+	uint32_t o = sec * frequency_g;
+	uint32_t jiffy = jiffies_g + o;
 	time_list_node_t* node = (time_list_node_t*)malloc(sizeof(time_list_node_t));
 	node->callback = callback;
 	node->sec = sec;
+	node->offset = o;
 	node->t = jiffy;
 	node->next = (time_list_node_t*)head;
 	head = node;
 }
 
-void timer_handler(__attribute__((unused))register_t* regs)
+void timer_handler(register_t* regs)
 {
-	jiffies++;
+	jiffies_g++;
+	memcpy(&saved_context, regs, sizeof(register_t));
 	if(head != NULL) {
 		time_list_node_t* current = head;
 		do
 		{
-			if(current->t == jiffies) {
+			// if(current->t == jiffies_g) {
+			if(!(jiffies_g % current->offset)) {
 				current->callback();
 			}
 			current = current->next;

@@ -47,7 +47,7 @@ char * get_mem_type_str(multiboot_uint32_t type) {
 
 void print_jiffies() {
 	fb_set_color(FB_RED, FB_BLACK);
-	printf("[Kernel] Time callback jiffies: %d\n", jiffies);
+	printf("[Kernel] Time callback jiffies: %d\n", jiffies_g);
 	fb_reset_color();
 }
 
@@ -95,8 +95,8 @@ void user_process() {
 void kmain(multiboot_info_t * mb_info) {
 	fb_clear();
 
-	char buf[64];
-	cpu_get_brand(buf);
+	// char buf[64];
+	// cpu_get_brand(buf);
 	// printf("[KERNEL] CPU: %s\n", buf);
 
 	init_gdt();

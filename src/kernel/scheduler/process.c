@@ -64,7 +64,7 @@ void schedule() {
 
     if(!current_process) {
         // First process, this will only happen when we create the user entry process, we'll make sure this first process never exits
-        prev_jiffies = jiffies;
+        prev_jiffies = jiffies_g;
         current_process = list_peek_front(process_list);
         last_process = NULL;
         context_switch(NULL, &current_process->regs);
@@ -158,5 +158,6 @@ void process_init() {
     process_list = list_create();
     // TODO 修改设置时间可以是小数double类型
     // Tell the timer to call our process_scheduler every 2/18 seconds
-    register_timer_callback(schedule, 1);
+    // 30.0/frequency_g
+    register_timer_callback(schedule, 0.3);
 }

@@ -41,10 +41,10 @@ user_regs_switch:
     ; Enter usermode from here(make sure the registers are restored correctly for the user process !)
 
     ; TODO 为什么要有下面的压入数据
-    ; ; Load eax here
-    ; mov eax, [ebp + 0]
-    ; ; Now, restore ebp
-    ; mov ebp, [ebp + 20]
+    ; Load eax here
+    mov eax, [ebp + 0]
+    ; Now, restore ebp
+    mov ebp, [ebp + 20]
     ; sti
     iret
 

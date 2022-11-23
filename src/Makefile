@@ -89,6 +89,7 @@ qemu-debug: all
 	@sleep 3
 	@$(TERMINAL) -e "telnet 127.0.0.1 $(QEMU_MON_PORT)"
 	@gdb -s $(BIN_DIR)/$(OS_BIN) -ex "target remote localhost:1234"
+# set disassembly-flavor intel
 
 clean:
 	@rm -rf $(BUILD_DIR)
