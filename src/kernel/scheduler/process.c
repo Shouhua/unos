@@ -158,5 +158,5 @@ void process_init() {
     process_list = list_create();
     // TODO 修改设置时间可以是小数double类型
     // Tell the timer to call our process_scheduler every 2/18 seconds
-    register_timer_callback(schedule, 1);
+    register_timer_callback(schedule, 30.0/frequency_g);
 }
