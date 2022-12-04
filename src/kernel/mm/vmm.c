@@ -45,13 +45,18 @@ void vmm_flush_tlb_entry(uint32_t virt_addr)
     asm volatile("invlpg (%0)" ::"r"(virt_addr) : "memory");
 }
 
-bool vmm_alloc_page(pte_t* e) 
+bool
+vmm_alloc_page(void* va, size_t sz, uint16_t attr) 
 {
-	void* p = pmm_alloc_block();
-	if(!p) return false;
-	*e = (*e & ~PTE_FRAME) | (uint32_t)p | PTE_PRESENT;
-	return true;
+
 }
+// bool vmm_alloc_page(pte_t* e) 
+// {
+// 	void* p = pmm_alloc_block();
+// 	if(!p) return false;
+// 	*e = (*e & ~PTE_FRAME) | (uint32_t)p | PTE_PRESENT;
+// 	return true;
+// }
 
 void vmm_free_page(pte_t* e)
 {

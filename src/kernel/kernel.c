@@ -113,12 +113,12 @@ void kmain(multiboot_info_t * mb_info) {
 
 	register_interrupt_handler(0, divide_hanlder);
 
-	init_pmm(MEM_1MB + (mb_info->mem_upper << 10), &__kernel_end);
+	init_pmm(MEM_1MB + (mb_info->mem_upper << 10));
 
-	printf("[KERNEL] Mem: 0x%x KB, Extended Mem: 0x%x KB\n\x09Total Mem: 0x%x B\n",
-					mb_info->mem_lower,
-					mb_info->mem_upper,
-					(mb_info->mem_upper<<10) + 0x100000); // 可使用内存总数
+	// printf("[KERNEL] Mem: 0x%x KB, Extended Mem: 0x%x KB\n\x09Total Mem: 0x%x B\n",
+	// 				mb_info->mem_lower,
+	// 				mb_info->mem_upper,
+	// 				(mb_info->mem_upper<<10) + 0x100000); // 可使用内存总数
 
 	multiboot_memory_map_t* map = (multiboot_memory_map_t*)mb_info->mmap_addr;
 	uint8_t map_size = mb_info->mmap_length / sizeof(multiboot_memory_map_t);
@@ -145,7 +145,7 @@ void kmain(multiboot_info_t * mb_info) {
 	// 将内核占用内存调整为占用
 	pmm_deinit_region((uint32_t)&__kernel_start, (uint32_t)(&__kernel_end - &__kernel_start));
 	// 调整，想着kernel_end-0x400000，位heap区域, 后面取消pmm_alloc_bloc，或者基于这个重构malloc，统一分配内核内存
-	pmm_deinit_region((uint32_t)&__kernel_start, 0x400000 - (uint32_t)(&__kernel_start));
+	pmm_deinit_region((uint32_t)&__kernel_end, 0x400000 - (uint32_t)(&__kernel_end));
 	printf("[PMM] Allocate %d block for kernel\n", (0x400000 - (uint32_t)(&__kernel_start))/4096);
 
 	printf("[PMM] Pmm initialized blocks: %d, used or reserved blocks: %d, free blocks: %d\n", 
