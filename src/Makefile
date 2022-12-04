@@ -17,9 +17,11 @@ QEMU_NETWORK_CONFIG := -netdev tap,id=b1,script=no,downscript=no -device rtl8139
 # -netdev tap,id=u1,helper=/usr/lib/qemu/qemu-bridge-helper -device rtl8139,netdev=u1,id=f1 \
 # -object filter-dump,id=f1,netdev=u1,file=dump.dat
 # -nic tap,mac=52:54:0:12:34:56,model=rtl8139,helper=/usr/lib/qemu/qemu-bridge-helper
-QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) $(QEMU_MEM_CONFIG) $(QEMU_NETWORK_CONFIG)
+# 添加了网络设置, 启动时需要root权限，使用sudo
+# QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) $(QEMU_MEM_CONFIG) $(QEMU_NETWORK_CONFIG)
+QEMU_CONFIG := -cdrom $(BUILD_DIR)/$(OS_ISO) $(QEMU_MEM_CONFIG)
 
-# QEMU_GDB_CONFIG := -s -S # 默认使用tcp 12345
+# QEMU_GDB_CONFIG := -s -S # 默认使用tcp 1234
 # GDB_CLIENT_OPTIONS := target remote localhost:1234
 
 QEMU_GDB_CONFIG := -chardev socket,path=/tmp/gdb-socket,server=on,wait=off,id=gdb0 -gdb chardev:gdb0 -S
@@ -99,11 +101,16 @@ qemu: all
 qemu-debug: all
 # 网络设备设置必须要使用sudo，这种情况设置gdb server，gdb client也许要使用sudo连接本地的unix socket文件
 	@sudo $(QEMU) $(QEMU_DEBUG_CONFIG)
-	@sleep 3
+	@sleep 1
 	@$(TERMINAL) $(TERMINAL_QEMU_US_MONITOR_OPTIONS)
 	@$(TERMINAL) -- sudo gdb -s $(BIN_DIR)/$(OS_BIN) -ex "$(GDB_CLIENT_OPTIONS)"
 # ubuntu情況下qemu-system-i386会导致terminal有问题，必须使用reset重置，这里将所有调试界面重新弹出
 	@reset
+
+qemu-debug-vscode: all
+	@$(QEMU) $(QEMU_DEBUG_CONFIG)
+	@sleep 0.5
+	@$(TERMINAL) $(TERMINAL_QEMU_US_MONITOR_OPTIONS)
 
 clean:
 	@rm -rf $(BUILD_DIR)

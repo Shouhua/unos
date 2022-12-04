@@ -1,6 +1,21 @@
 {
 	"version": "2.0.0",
-	"tasks": [
+	"tasks": [        
+		{
+			"label": "Launch Unos",
+			"type": "shell",
+			"options": {
+				"cwd": "${workspaceFolder}/src"	
+			},
+			"command": "make qemu-debug-vscode",
+			"isBackground": true,
+			"problemMatcher": {
+					"background": {
+							"activeOnStart": true,
+							"endsPattern": "^\\(qemu\\).*"
+					}
+			}
+		},
 		{
 			"type": "shell",
 			"label": "C/C++: gcc build active file",
