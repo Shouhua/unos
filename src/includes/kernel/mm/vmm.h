@@ -50,5 +50,6 @@ void vmm_map_page(void* phys, void* virt);
 bool switch_page_directory(pd_t *);
 void enable_paging(bool);
 void page_fault_handler(register_t* regs);
+bool vmm_alloc_page(void* va, size_t sz, uint16_t attr);
 
 #endif

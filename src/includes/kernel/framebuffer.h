@@ -47,8 +47,10 @@ void fb_reset_color();
 void fb_write_cell(int16_t i, int8_t c);
 void fb_write_char(int8_t c);
 void fb_move_cursor(uint16_t pos);
+void fb_update_cursor();
 void fb_write(int8_t *buf, uint32_t len);
 void fb_clear();
 void fb_write_str(int8_t *buf);
+void scroll();
 
 #endif

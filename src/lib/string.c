@@ -113,25 +113,9 @@ void *memcpy(void *dst, void const *src, int n)
 	return ret;
 }
 
-/*
- * Scroll down by one line, copy the line 1 to line 0, line 2 to line 1...... and delete the last line
- * */
-// TODO
-void scroll() {
-    // // Move up
-    // void * start = (void*)SCREEN + 1 * WIDTH * 2;
-    // uint32_t size = curr_y * WIDTH * 2;
-    // if(curr_y < 25)
-    //     return;
-    // memcpy(SCREEN, start, size);
-    // // Delete
-    // start = (void*)SCREEN + size;
-    // memsetw(start, PAINT(0x20, DEFAULT_COLOR), WIDTH);
-    // curr_y--;
-}
-
 int printf(const char *format, ...)
 {
+	scroll();
 	char **arg = (char **)&format;
 	int c;
 	char buf[20];
@@ -190,7 +174,6 @@ int printf(const char *format, ...)
 			}
 		}
 	}
-
 	return 0;
 }
 

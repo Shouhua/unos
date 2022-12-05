@@ -1,6 +1,7 @@
 #include "lib/stdint.h"
 #include "kernel/io.h"
 #include "kernel/framebuffer.h"
+#include "lib/string.h"
 
 #define FB_WIDTH 80
 #define FB_HEIGHT 25
@@ -29,6 +30,17 @@ void fb_reset_color()
 	current_bg = FB_BLACK;
 }
 
+uint8_t fb_get_text_attr(uint8_t foreground, uint8_t background)
+{
+	return (background << 4) | (foreground & 0x0F);
+}
+
+
+uint16_t fb_get_text_value(uint8_t c, uint8_t foreground, uint8_t background) 
+{
+	return c | (fb_get_text_attr(foreground, background) << 8);
+}
+
 /**
  * fb_write_cell:
  * Writes a character with the given foreground and background to position i
@@ -49,6 +61,11 @@ void fb_move_cursor(uint16_t pos)
 	outb(FB_DATA_PORT, ((pos >> 8) & 0x00FF));
 	outb(FB_COMMAND_PORT, FB_LOW_BYTE_COMMAND);
 	outb(FB_DATA_PORT, pos & 0x00FF);
+}
+
+void fb_update_cursor()
+{
+	fb_move_cursor(fb_pos_x + (fb_pos_y * FB_WIDTH));
 }
 
 void fb_write(int8_t *buf, uint32_t len)
@@ -114,4 +131,19 @@ void fb_clear()
 	{
 		fb_write_cell(i, ' ');
 	}
+}
+
+/*
+ * Scroll down by one line, copy the line 1 to line 0, line 2 to line 1...... and delete the last line
+ * */
+void scroll() {
+	void* start = (void*)framebuffer_addr + 1 * FB_WIDTH * 2;
+	uint32_t size = fb_pos_y * FB_WIDTH * 2;
+	if(fb_pos_y < FB_HEIGHT)
+			return;
+	memcpy(framebuffer_addr, start, size);
+	// Delete
+	start = (void*)framebuffer_addr + size;
+	memsetw(start, fb_get_text_value(' ', FB_WHITE, FB_BLACK), FB_WIDTH);
+	fb_pos_y--;
 }
