@@ -3,6 +3,11 @@
 
 #include <lib/stdint.h>
 
+#define PMM_BLOCKS_PER_BYTE 	8
+#define PMM_BLOCK_SIZE 			4096
+#define PMM_BLOCK_ALIGN 		PMM_BLOCK_SIZE
+#define PMM_BITMAP_SIZE			32768 // 4G / 4096 / 4*8 4G最多使用128k大小数组
+
 typedef uint32_t physical_addr;
 
 void init_pmm(size_t);

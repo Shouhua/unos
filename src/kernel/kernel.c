@@ -154,10 +154,10 @@ void kmain(multiboot_info_t * mb_info) {
 		pmm_get_free_block_count());
 
 	init_paging();
-	vmm_map_page((void*)VGA_BUFFER_PADDR, (void*)VGA_BUFFER_VADDR);
-	vmm_map_page((void*)VGA_BUFFER_PADDR+0x1000, (void*)VGA_BUFFER_VADDR+0x1000);
+	vmm_map_page(kpage_dir, (void*)VGA_BUFFER_PADDR, (void*)VGA_BUFFER_VADDR, PTE_PRESENT | PTE_WRITABLE |PTE_USER);
+	vmm_map_page(kpage_dir, (void*)VGA_BUFFER_PADDR+0x1000, (void*)VGA_BUFFER_VADDR+0x1000, PTE_PRESENT | PTE_WRITABLE |PTE_USER);
 	fb_set_buffer((uint8_t*)VGA_BUFFER_VADDR);
-	// printf("[VMM] Vmm DONE\n");
+	printf("[VMM] Vmm DONE\n");
 
 	// 分配kernel heap
 	init_mm((uint32_t)&__kernel_end, 0xC0400000);

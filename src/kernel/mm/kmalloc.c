@@ -1,5 +1,7 @@
 #include "kernel/mm/kmalloc.h"
 #include "kernel/mm/dmm.h"
+#include "lib/stdint.h"
+#include "lib/string.h"
 
 /* The only global variable is a pointer to the first block */
 static char *heap_listp;   
@@ -81,10 +83,10 @@ void mm_free(void *bp)
 }
 
 /* Not implemented. For consistency with 15-213 malloc driver */
-void *mm_realloc(void *ptr, size_t size)
-{
-    return NULL;
-}
+// void *mm_realloc(void *ptr, size_t size)
+// {
+//     return NULL;
+// }
 
 /*
  * mm_checkheap - Check the heap for consistency

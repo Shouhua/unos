@@ -24,6 +24,7 @@ dmm_sbrk(int incr)
         PANIC("mem_sbrk failed. Ran out of memory...\n");
         return (void*)-1;
     }
+    // TODO 使用vmm_alloc_page
     mem_brk += incr;
     return (void*)old_brk;
 }

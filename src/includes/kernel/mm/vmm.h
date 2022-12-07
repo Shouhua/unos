@@ -42,14 +42,15 @@ typedef struct pd
 } pd_t;
 
 extern pd_t* cur_dir;
+extern pd_t* kpage_dir;
 
 void init_paging();
 
 void* virt2phys(void* virt_addr);
-void vmm_map_page(void* phys, void* virt);
+void vmm_map_page(pd_t* dir, void* phys, void* virt, uint32_t attr);
 bool switch_page_directory(pd_t *);
 void enable_paging(bool);
 void page_fault_handler(register_t* regs);
-bool vmm_alloc_page(void* va, size_t sz, uint16_t attr);
+// bool vmm_alloc_page(void* va, size_t sz, uint16_t attr);
 
 #endif
