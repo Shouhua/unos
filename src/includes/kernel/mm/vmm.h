@@ -46,7 +46,7 @@ extern pd_t* kpage_dir;
 
 void init_paging();
 
-void* virt2phys(void* virt_addr);
+void* virt2phys(pd_t* dir, void* virt_addr);
 void vmm_map_page(pd_t* dir, void* phys, void* virt, uint32_t attr);
 bool switch_page_directory(pd_t *);
 void enable_paging(bool);

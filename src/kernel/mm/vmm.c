@@ -8,6 +8,7 @@
 
 #define PAGE_DIRECTORY_INDEX(x) (((uint32_t)(x) >> 22) & 0x3ff)
 #define PAGE_TABLE_INDEX(x) (((uint32_t)(x) >> 12) & 0x3ff)
+#define PAGE_FRAME_INDEX(x) (((uint32_t)(x) << 20 & 0xfff00000) >> 20)
 #define PAGE_GET_PHYSICAL_ADDRESS(x) ((uint32_t)x & ~0xfff)
 
 // The current page directory;
@@ -23,11 +24,15 @@ void* virt2phys(pd_t* dir, void* virt_addr) {
 	}
 	uint32_t page_dir_idx = PAGE_DIRECTORY_INDEX(virt_addr);
 	uint32_t page_tbl_idx = PAGE_TABLE_INDEX(virt_addr);
-	uint32_t page_frame_offset = PAGE_GET_PHYSICAL_ADDRESS(virt_addr);
+	uint32_t page_frame_offset = PAGE_FRAME_INDEX(virt_addr);
 	pde_t table = dir->entries[page_dir_idx];
-	uint32_t frame = ((pt_t*)(table|0xFFFFFFD00))->entries[page_tbl_idx];
-	t = (t << 12) + page_frame_offset;
-	return (void*)t;
+	if(table) {
+		uint32_t frame = ((pt_t*)((uint32_t)(table & 0xFFFFFF000)))->entries[page_tbl_idx];
+		if(frame) {
+			return (void*)((uint32_t)((frame & 0xFFFFFF000) | page_frame_offset));
+		}
+	}
+	return NULL;
 }
 
 inline pte_t* vmm_pt_lookup_entry(pt_t* p, uint32_t virt_addr)

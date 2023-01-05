@@ -76,7 +76,7 @@ void get_mac_addr(uint8_t * src_mac_addr) {
 void rtl8139_send_packet(void * data, uint32_t len) {
     // First, copy the data to a physically contiguous chunk of memory
     void * transfer_data = malloc(len);
-    void * phys_addr = virt2phys(transfer_data);
+    void * phys_addr = virt2phys(cur_dir, transfer_data);
     memcpy(transfer_data, data, len);
 
     // Second, fill in physical address of data, and length
@@ -121,7 +121,7 @@ void rtl8139_init() {
     // Allocate receive buffer
     rtl8139_device.rx_buffer = malloc(8192 + 16 + 1500);
     memset(rtl8139_device.rx_buffer, 0x0, 8192 + 16 + 1500);
-    outl(rtl8139_device.io_base + 0x30, (uint32_t)virt2phys(rtl8139_device.rx_buffer));
+    outl(rtl8139_device.io_base + 0x30, (uint32_t)virt2phys(cur_dir, rtl8139_device.rx_buffer));
 
     // Sets the TOK and ROK bits high
     outw(rtl8139_device.io_base + 0x3C, 0x0005);

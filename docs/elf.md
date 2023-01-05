@@ -5,14 +5,15 @@
 
 ## readelf
 ```shell
-# read elf header information
+# display elf file header
 readelf -h [object/execute file] 
 
-# read elf section header information
+# read elf section headers
 readelf -S [object/execute file] 
 
 # read elf symbol table information
-readelf -s [object/execute file] 
+readelf -s [object/execute file]  # symbol table
+readelf -sD [object/execute file]  # dynamic symbol table
 
 # display section content
 readelf -x .text [object/execute file]
@@ -20,8 +21,9 @@ readelf -x .text [object/execute file]
 # string dump section
 readelf -p .data [object/execute file]
 
-# read program header
+# read program header table
 readelf -l [execute file]
+readelf -lW [execute file] # print entry on one line
 ```
 
 ## objdump
@@ -38,4 +40,5 @@ objdump -s
 objdump -t 
 # display information only for secion
 objdump -s -j .rodata [object/execute file]
+objdump -s -d -j .got -j .got.plt -j .plt hello
 ```

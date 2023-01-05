@@ -143,7 +143,7 @@ void create_process_from_routine(void * routine, char * name) {
     //  allocate_region(p1->page_dir, 0xC0000000 - 4 * PAGE_SIZE, 0xC0000000, 0, 0, 1);
     // p1->regs.cr3 = (uint32_t)virtual2phys(kpage_dir, p1->page_dir);
     p1->page_dir = cur_dir;
-    p1->regs.cr3 = (uint32_t)virt2phys(p1->page_dir);
+    p1->regs.cr3 = (uint32_t)virt2phys(cur_dir, p1->page_dir);
     p1->state = TASK_CREATED;
     if(!current_process)
         current_process = p1;

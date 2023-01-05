@@ -38,8 +38,9 @@ ifeq ($(shell lsb_release -si), Ubuntu)
 else
 	CC := gcc
 	TERMINAL := xfce4-terminal --hold
+# TERMINAL := xfce4-terminal
 	TERMINAL_QEMU_TELNET_MONITOR_OPTIONS := -e "telnet 127.0.0.1 $(QEMU_MONITOR_PORT)"
-	TERMINAL_QEMU_US_MONITOR_OPTIONS := -e sudo nc -U /tmp/qemu-monitor-socket
+	TERMINAL_QEMU_US_MONITOR_OPTIONS := -e "sudo nc -U /tmp/qemu-monitor-socket"
 endif
 
 CFLAGS := -m32 -fno-stack-protector \
@@ -103,9 +104,11 @@ qemu-debug: all
 	@sudo $(QEMU) $(QEMU_DEBUG_CONFIG)
 	@sleep 1
 	@$(TERMINAL) $(TERMINAL_QEMU_US_MONITOR_OPTIONS)
-	@$(TERMINAL) -- sudo gdb -s $(BIN_DIR)/$(OS_BIN) -ex "$(GDB_CLIENT_OPTIONS)"
+	@$(TERMINAL) -e 'sudo gdb -s $(BIN_DIR)/$(OS_BIN) -ex "$(GDB_CLIENT_OPTIONS)"'
 # ubuntu情況下qemu-system-i386会导致terminal有问题，必须使用reset重置，这里将所有调试界面重新弹出
-	@reset
+# ifeq ($(shell lsb_release -si), Ubuntu)
+# 	@reset
+# endif
 
 qemu-debug-vscode: all
 	@$(QEMU) $(QEMU_DEBUG_CONFIG)

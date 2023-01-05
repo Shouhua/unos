@@ -77,6 +77,7 @@ break 10 # linenumber, function name
 info breakpoints
 print 0x7fffffffdde8 # p 0x7fffffffdde8
 x /16xb 0x7fffffffdde8
+x /20i 0x12345 # 打印20条汇编指令
 b *0x1000af
 where
 frame
@@ -84,7 +85,39 @@ step (finish/fin)
 p /x *array@len
 list /l/l-/l+/ l 1,10
 layout [asm/src]
+set disassembly-flavor intel
 ```
+
+man -k printf
+1: user command
+2: system calls
+3: library calls
+
+strace
+lstrace
+ldd test
+pidof sth
+
+real name
+soname(shared object name)
+libc.so.6 > libc-2.31.so
+
+-fpie -fpic ???
+gcc hello.c -lm -o hello
+-lm必须出现在源文件后面，不然会报错
+
+gcc默认使用延迟加载，所有可以实验初次运行到main时候，外部依赖没有值，但是调用时，plt.got更新
+
+gcc -fpic -c source1.c source2.c
+gcc -fpic source1.0 source2.0 -shared -Wl,-soname,libsource.so.1 -o libsource.so.1.1
+
+LD_LIBRARY_PATH
+
+gdb hello
+b _start
+
+.plt -> .got.plt -> .plt -> _dl_runtime_resolve(link_map, reloc_index) -> write .got.plt
+https://ypl.coffee/dl-resolve/
 
 ## gdb + vscode
 在vscode中调试时，可以在Debug Console中添加前缀-exec，然后跟上gdb调试命令

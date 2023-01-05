@@ -65,7 +65,7 @@ void test_syscall() {
 void user_process2() {
     // uint32_t lock = 0;
     while(1) {
-        for(int i = 0; i < 10000; i++) {
+        for(int i = 0; i < 1000; i++) {
             for(int j= 0; j < 2000; j++) {
 
             }
@@ -79,10 +79,10 @@ void user_process2() {
 void user_process() {
     // uint32_t lock = 0;
     for(int i = 0; i < 2; i++) {
-        create_process_from_routine(user_process2, "user process2");
+        create_process_from_routine(user_process2, "user process"+i);
     }
     while(1) {
-        for(int i = 0; i < 10000; i++) {
+        for(int i = 0; i < 1000; i++) {
             for(int j= 0; j < 2000; j++) {
 
             }
@@ -160,7 +160,7 @@ void kmain(multiboot_info_t * mb_info) {
 	printf("[VMM] Vmm DONE\n");
 
 	// 分配kernel heap
-	init_mm((uint32_t)&__kernel_end, 0xC0400000);
+	init_mm((uint32_t)&__kernel_end, 0xC0400000 - 0x1000);
 	// mm_print_info();
 
 	// uint32_t *ptr = (uint32_t *)0xA0000000;
@@ -177,15 +177,15 @@ void kmain(multiboot_info_t * mb_info) {
 	// printf("[KERNEL] ALL DONE!!!\n");
 	// asm volatile("int $0x2b");
 
-	// process_init();
-	// syscall_init();
+	process_init();
+	syscall_init();
 
 	// uint32_t esp;
 	// asm volatile("mov %%esp, %0" : "=r"(esp));
-	// tss_set_stack(0x10, esp);
+	tss_set_stack(0x10, 0x400000);
 
 	// Start the first process
-	// create_process_from_routine(user_process, "user process");
+	create_process_from_routine(user_process, "user process");
 
 	// printf("Done!\n");
 
