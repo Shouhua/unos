@@ -1,3 +1,7 @@
+### loader解释
+https://github.com/malisal/loaders
+本文件夹中loader_temp.*为原始文件，loader.*为新文件
+
 execve
 .interp (fill the GOT and PLT table)
 _start
@@ -11,6 +15,8 @@ argc
 argv
 envp
 stack from startup code
+----------------要研究的堆栈开始--------------------------
+详细可以参考：https://lwn.net/Articles/631631/
 argc
 argv pointers
 NULL that ends argv[]

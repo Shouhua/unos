@@ -1,3 +1,10 @@
+/*
+    gcc dump_stack.c -g -o dump_stack
+    gdb dump_stack
+    b main
+    r
+    argc/argv都没有在symbol出现，因为他们存在于寄存器或者堆栈中，argc在edi中，argv在$esp中
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <elf.h>
@@ -16,9 +23,9 @@ int main(int argc, char** argv) {
     char *env_str = NULL;
     unsigned char *rand_bytes = NULL;
     int arg_num = *(p - 1);
-    printf("arg_num:%d\n", arg_num);
+    printf("arg_num:%d, argc addr: 0x%x\n", arg_num, p-1);
     for (i = 0;i < arg_num;i++) {
-        printf("arg %d:%s\n", i, *p); 
+        printf("arg %d:%s, at: 0x%x\n", i, *p, p); 
         p++;
     }
     argv_end_addr = p;
@@ -27,16 +34,20 @@ int main(int argc, char** argv) {
     env_str = (char *)*p;
     env_start_addr = p;
     while (*p) {
-        printf("%s\n", *p); 
+        printf("%s, at: 0x%x\n", *p, p); 
         p++;
     }
     env_end_addr = p;
+    printf("env end addr: 0x%x\n", p);
     p++;//skip null
     printf("\nauxiliary vectors:\n");
     auxv = (Elf64_auxv_t *)p; 
     auxv_start_addr = (long *)auxv;
     while (auxv->a_type != AT_NULL) {
         printf("auxv type:%ld, val:0x%x\n", auxv->a_type, auxv->a_un.a_val); 
+        if(auxv->a_type == AT_EXECFN) {
+            printf("AT_EXECFN content is: %s\n", auxv->a_un.a_val);
+        }
         if (auxv->a_type == AT_PLATFORM) {
             platform = (char *)(auxv->a_un.a_val);
         }

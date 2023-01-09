@@ -15,6 +15,16 @@
 		"process.h": "c",
 		"syscall.h": "c",
 		"pic.h": "c",
-		"dmm.h": "c"
+		"dmm.h": "c",
+		"atomic": "c",
+		"sstream": "c",
+		"cstdlib": "c",
+		"*.tcc": "c",
+		"istream": "c",
+		"limits": "c",
+		"stop_token": "c",
+		"streambuf": "c",
+		"elf.h": "c",
+		"loader.h": "c"
 	}
 }
