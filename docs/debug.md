@@ -73,12 +73,23 @@ c）u：标明一个单元的长度。b是一个byte，h是两个byte（halfword
 gcc -g -o printf printf.c
 gdb printf
 run
+
+help x
+
+b _start
+b elf.c:10
+b elf.c:main
 break 10 # linenumber, function name
-info breakpoints
+b *0x1000af
+info breakpoints(i b)
+
+info proc
+info register(r) rsp
+
+
 print 0x7fffffffdde8 # p 0x7fffffffdde8
 x /16xb 0x7fffffffdde8
 x /20i 0x12345 # 打印20条汇编指令
-b *0x1000af
 where
 frame
 step (finish/fin)
@@ -86,9 +97,18 @@ p /x *array@len
 list /l/l-/l+/ l 1,10
 layout [asm/src]
 set disassembly-flavor intel
+starti set breakpoint when first start program
+start 执行程序至main主函数的起始位置停下
+run 执行程序直到遇到断点
 ```
+https://fasterthanli.me/series/making-our-own-executable-packer/part-2
+malloc底层也是使用mmap分配内存的
+pmap
+cat /proc/1234/maps
+ls -i file # print inode of file
+sudo debugfs -R "ncheck 3291229" /dev/sda1
 
-man -k printf
+man -k "^printf$"
 1: user command
 2: system calls
 3: library calls
@@ -114,7 +134,6 @@ gcc -fpic source1.0 source2.0 -shared -Wl,-soname,libsource.so.1 -o libsource.so
 LD_LIBRARY_PATH
 
 gdb hello
-b _start
 
 .plt -> .got.plt -> .plt -> _dl_runtime_resolve(link_map, reloc_index) -> write .got.plt
 https://ypl.coffee/dl-resolve/
@@ -122,25 +141,6 @@ https://ypl.coffee/dl-resolve/
 ## gdb + vscode
 在vscode中调试时，可以在Debug Console中添加前缀-exec，然后跟上gdb调试命令
 ```-exec display/8xw $sp```
-
-```shell
-# 一个文件/home/username/project/folder/file.ext 在编辑器中打开
-# 一个目录/home/username/project 作为你的根目录
-${workspaceFolder} 当前工作根目录 /home/username/project
-${workspaceFolderBasename} 当前文件父目录 project
-${file} 当前打开的完整文件名 file.ext
-${relativeFile} 当前打开文件相对当前根目录的路径文件名 folder/file.ext
-${relativeFileDirname} 当前打开文件相对当前根目录的路径 folder
-${fileBasename} 当前打开的文件名 file.ext
-${fileBasenameNoExtension} 当前打开文件名不包括扩展 file
-${fileDirname} 当前打开文件的路径 /home/username/project/folder
-${fileExtname} 当前打开文件的扩展名 ext
-${cwd} 启动时task工作的目录
-${lineNumber} 光标所在行
-${selectedText} 编辑器中所选文本
-${execPath} code.exe所在目录路径
-${defaultBuildTask} 默认build task的名字
-```
 ```json
 // task.json
 {
