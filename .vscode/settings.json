@@ -25,6 +25,7 @@
 		"stop_token": "c",
 		"streambuf": "c",
 		"elf.h": "c",
-		"loader.h": "c"
+		"loader.h": "c",
+		"mman.h": "c"
 	}
 }

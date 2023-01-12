@@ -83,7 +83,7 @@ break 10 # linenumber, function name
 b *0x1000af
 info breakpoints(i b)
 
-info proc
+info proc #拿到当前执行的process id
 info register(r) rsp
 
 
@@ -100,6 +100,9 @@ set disassembly-flavor intel
 starti set breakpoint when first start program
 start 执行程序至main主函数的起始位置停下
 run 执行程序直到遇到断点
+
+ptype 0x123 #打印当前类型
+ptype /o #包括各个type的大小
 ```
 https://fasterthanli.me/series/making-our-own-executable-packer/part-2
 malloc底层也是使用mmap分配内存的

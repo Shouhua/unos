@@ -31,4 +31,5 @@ void my_printf(const char *format, int num) {
  mmap
  malloc
  pmap
- mprotect
+ mprotect 注意第一个参数起始地址必须是PAGE_SIZE对齐的，addr&0xfff，不然返回-1，errno=22
+ 一定要注意指针加减，会根据指针类型加减，否则就要将地址转化成数值类型进行运算
