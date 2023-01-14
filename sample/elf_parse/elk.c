@@ -171,30 +171,71 @@ int main(int argc, char *argv[]) {
     // _disassemble_hello(file_header, buf);
 
     // 在内存中执行elf文件
-    Elf_Phdr *entry_p_header = NULL;
-    for(int i=0; i<file_header->e_phnum; i++) {
-        Elf_Phdr *p_header = (Elf_Phdr *)((long)file_header+file_header->e_phoff+i*(file_header->e_phentsize));
-        if(file_header->e_entry >= p_header->p_vaddr && file_header->e_entry <= (p_header->p_vaddr + p_header->p_memsz)) 
-        {
-            entry_p_header = p_header;
-            break;
-        }
-    }
-    if(!entry_p_header) {
-        fprintf(stderr, "Get entry program header failed\n");
-        exit(EXIT_FAILURE);
-    }
+    // Elf_Phdr *entry_p_header = NULL;
+    // for(int i=0; i<file_header->e_phnum; i++) {
+    //     Elf_Phdr *p_header = (Elf_Phdr *)((long)file_header+file_header->e_phoff+i*(file_header->e_phentsize));
+    //     if(file_header->e_entry >= p_header->p_vaddr && file_header->e_entry <= (p_header->p_vaddr + p_header->p_memsz)) 
+    //     {
+    //         entry_p_header = p_header;
+    //         break;
+    //     }
+    // }
+    // if(!entry_p_header) {
+    //     fprintf(stderr, "Get entry program header failed\n");
+    //     exit(EXIT_FAILURE);
+    // }
 
     // mprotect必须使用4k对齐地址，不然出现errno=22
     
-    if(mprotect((void*)(((long)buf+entry_p_header->p_offset) & (~0xFFF)), entry_p_header->p_memsz, PROT_READ|PROT_WRITE|PROT_EXEC) == -1) {
-        fprintf(stderr, "mprotect failed: error %d\n", errno);
-        exit(EXIT_FAILURE);
+    // if(mprotect((void*)(((long)buf+entry_p_header->p_offset) & (~0xFFF)), entry_p_header->p_memsz, PROT_READ|PROT_WRITE|PROT_EXEC) == -1) {
+    //     fprintf(stderr, "mprotect failed: error %d\n", errno);
+    //     exit(EXIT_FAILURE);
+    // }
+
+    printf("Mapping %s in memory\n", argv[1]);
+    for(int i = 0; i < file_header->e_phnum; i++)
+    {
+        Elf_Phdr *p_header = (Elf_Phdr *)((long)file_header+file_header->e_phoff+i*(file_header->e_phentsize));
+        if(p_header->p_type == PT_LOAD)
+        {
+           printf("Mapping segement @ 0x%08x - 0x%08x with 0x%x\n", p_header->p_vaddr, p_header->p_vaddr+p_header->p_memsz, p_header->p_flags);
+           if(mmap((void*)p_header->p_vaddr, p_header->p_memsz, PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) == MAP_FAILED)
+           {
+                fprintf(stderr, "mmap failed: %d\n", errno);
+                exit(EXIT_FAILURE);
+           }
+           printf("Copying segment data...\n");
+           memcpy((void*)p_header->p_vaddr, (void*)(buf+p_header->p_offset), p_header->p_memsz);
+           printf("Adjusting permissions...\n");
+            int p_prot = PROT_NONE;
+           if(p_header->p_flags & 0x0004)
+           {
+                p_prot |= PROT_READ;
+           }
+           if(p_header->p_flags & 0x0002)
+           {
+        		p_prot |= PROT_WRITE;
+           }
+           if(p_header->p_flags & 0x0001)
+           {
+            	p_prot |= PROT_EXEC;
+           }
+           mprotect((void*)p_header->p_vaddr, p_header->p_memsz, p_prot);
+        }
     }
+
     printf("Executing %s in memory...\n", argv[1]);
+
     int (*ptr)();
-    // ptr = (int (*)())file_header->e_entry;
-    ptr = (int (*)())(buf+entry_p_header->p_offset);
+    ptr = (int (*)())file_header->e_entry;
+    // ptr = (int (*)())(buf+entry_p_header->p_offset);
+
+    // printf("      code   @ 0x%016lx\n", buf+entry_p_header->p_vaddr);
+    // printf("entry offset @ 0x%016lx\n", file_header->e_entry - entry_p_header->p_vaddr);
+    // printf("entry point  @ 0x%016lx\n", buf+file_header->e_entry);
+
+    printf("Press enter to continue...");
+    while(getchar() != '\n');
     ptr(argc, argv, NULL);
 
     free(buf);
