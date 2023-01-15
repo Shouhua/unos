@@ -116,5 +116,5 @@ qemu-debug-vscode: all
 	@$(TERMINAL) $(TERMINAL_QEMU_US_MONITOR_OPTIONS)
 
 clean:
-	@rm -rf $(BUILD_DIR)
+	# @rm -rf $(BUILD_DIR)
 	@sleep 1
