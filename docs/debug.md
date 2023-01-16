@@ -95,7 +95,12 @@ frame
 step (finish/fin)
 p /x *array@len
 list /l/l-/l+/ l 1,10
+
 layout [asm/src]
+focus cmd # 在命令行中可以使用上下左右键检索
+focus src
+CTRL-X a # 推出layout模式
+
 set disassembly-flavor intel
 starti set breakpoint when first start program
 start 执行程序至main主函数的起始位置停下

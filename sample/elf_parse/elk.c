@@ -18,6 +18,35 @@ typedef Elf64_Word Elf_Word;
 typedef Elf64_Sxword Elf_Sxword;
 typedef Elf64_Rela Elf_Rela;
 
+Elf_Rela *first_rela;
+Elf_Ehdr *file_header;
+
+typedef struct node
+{
+	void *data;
+	struct node *next;
+} node_t;
+
+void node_push(node_t *head, void *data)
+{
+	if(head == NULL)
+	{
+		fprintf(stderr, "node push head == NULL");
+		exit(EXIT_FAILURE);
+	}
+	node_t *current = head;
+	while(current && current->next)
+	{
+		current = current->next;
+	}
+	current->next = (node_t *)malloc(sizeof(node_t));
+	current->next->data = data;
+	current->next->next = NULL;
+}
+
+node_t *phdr_head;
+node_t *rela_head;
+
 static void _check_version(Elf_Ehdr *header)
 {
 	assert(header->e_ident[EI_MAG0] == ELFMAG0);
@@ -89,6 +118,12 @@ static inline char * get_dynamic_tag(Elf_Sxword tag)
 {
 	switch (tag)
 	{
+	case 1:
+		return "NEEDED";
+		break;
+	case 29:
+		return "RUNPATH";
+		break;
 	case 4:
 		return "HASH";
 		break;
@@ -140,6 +175,12 @@ static inline char *get_relo_type(ulong type)
 {
 	switch(type)
 	{
+		case 1:
+			return "DIRECT64";
+			break;
+		case 5:
+			return "COPY";
+			break;
 		case 6:
 			return "GlobDat";
 			break;
@@ -155,6 +196,36 @@ static inline char *get_relo_type(ulong type)
 	}
 }
 
+static void parse_phdr(Elf_Ehdr *header) 
+{
+	phdr_head = (node_t *)malloc(sizeof(node_t));
+	for(int i = 0; i<header->e_phnum; i++)
+	{
+		// 重新分配内存，后面可以关闭buf
+		// Elf_Phdr *p_header = (Elf_Phdr *)malloc(sizeof(Elf_Phdr));
+		// memcpy(p_header, (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize)), sizeof(Elf_Phdr));
+		// NOTE 没有使用malloc
+		Elf_Phdr *p_header= (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize));
+		node_push(phdr_head, p_header);
+	}
+	// print program headers
+	printf("New Program Header:\n");
+	node_t * current = phdr_head->next;
+	while(current != NULL)
+	{
+		printf("\tfile 0x%08lx..0x%08lx | mem 0x%08lx..0x%08lx | align 0x%08lx | %s%s%s %s\n",
+			   ((Elf_Phdr*)(current->data))->p_offset,
+			   ((Elf_Phdr*)current->data)->p_offset + ((Elf_Phdr*)current->data)->p_filesz,
+			   ((Elf_Phdr*)current->data)->p_vaddr,
+			   ((Elf_Phdr*)current->data)->p_vaddr + ((Elf_Phdr*)current->data)->p_memsz,
+			   ((Elf_Phdr*)current->data)->p_align,
+			   ((Elf_Phdr*)current->data)->p_flags & 0x0004 ? "R" : ".",
+			   ((Elf_Phdr*)current->data)->p_flags & 0x0002 ? "W" : ".",
+			   ((Elf_Phdr*)current->data)->p_flags & 0x0001 ? "X" : ".",
+			   get_program_header_type(((Elf_Phdr*)current->data)->p_type));
+		current = current->next;
+	}
+}
 static void _print_program_header(Elf_Ehdr *header)
 {
 	printf("prgram_headers:\n");
@@ -178,41 +249,16 @@ static void _print_program_header(Elf_Ehdr *header)
 			   p_header->p_flags & 0x0001 ? "X" : ".",
 			   get_program_header_type(p_header->p_type));
 	}
-	Elf_Rela *rela;
 	if(dyn) {
 		printf("Dynamic entries:\n");
 		while(dyn->d_tag)
 		{
 			if(dyn->d_tag == DT_RELA)
 			{
-				rela = (Elf_Rela*)((ulong)header+dyn->d_un.d_val);
+				first_rela = (Elf_Rela*)((ulong)header+dyn->d_un.d_val);
 			}
 			printf("\ttag: %-10s addr: 0x%08lx\n", get_dynamic_tag(dyn->d_tag), dyn->d_un.d_val);
 			dyn += 1;
-		}
-	}
-
-	if(rela) 
-	{
-		ulong rela_unit = 24;
-
-		// TODO get section info
-		for(int i=0; i< header->e_shnum; i++)
-		{
-			Elf_Shdr * sec_header = (Elf_Shdr*)((ulong)header+header->e_shoff+i*header->e_shentsize);
-			// print relaction info
-			if(sec_header->sh_type == SHT_RELA) {
-				printf("Rela entries:\n");
-				for(int j=0; j<(sec_header->sh_size/rela_unit); j++)
-				{
-					printf("\toffset: 0x%08lx type: %8s sym: %ld addend: 0x%08lx\n",
-						rela->r_offset,
-						get_relo_type(rela->r_info&0xffffffff),
-						rela->r_info>>32,
-						rela->r_addend
-					);
-				}
-			}
 		}
 	}
 }
@@ -301,7 +347,7 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 	{
 		fprintf(stderr, "usage: elk FILE\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	int exec_fd = open(argv[1], O_RDONLY, 0);
@@ -319,10 +365,14 @@ int main(int argc, char *argv[])
 	char *buf = malloc(size);
 	read(exec_fd, buf, size);
 
-	Elf_Ehdr *file_header = (Elf_Ehdr *)buf;
+	// parse file header
+	file_header = (Elf_Ehdr *)malloc(sizeof(Elf_Ehdr));
+	memcpy(file_header, buf, sizeof(Elf_Ehdr));
+	
+	// file_header = (Elf_Ehdr *)buf;
 
-	// 解析elf文件信息
-	_parse(file_header);
+	// 不要传递file_header, 因为file_header大小只有Elf_Ehdr, 没法根据它获取其他信息
+	_parse((Elf_Ehdr *)buf);
 
 	// 使用execve执行elf文件
 	// printf("\nExecuting %s\n", argv[1]);
@@ -390,12 +440,40 @@ int main(int argc, char *argv[])
 			{
 				p_prot |= PROT_EXEC;
 			}
+
+			// TODO 效率低下，没有存储elf的header，program header，section等信息
+			if(first_rela) 
+			{
+				ulong rela_unit = 24; // 64位下rela item大小为24
+				for(int i=0; i< file_header->e_shnum; i++)
+				{
+					Elf_Shdr * sec_header = (Elf_Shdr*)((ulong)file_header+file_header->e_shoff+i*file_header->e_shentsize);
+					// print relaction info
+					if(sec_header->sh_type == SHT_RELA) {
+						printf("Rela entries:\n");
+						for(int j=0; j<(sec_header->sh_size/rela_unit); j++)
+						{
+							printf("\toffset: 0x%08lx type: %8s sym: %ld addend: 0x%08lx\n",
+								first_rela->r_offset,
+								get_relo_type(first_rela->r_info&0xffffffff),
+								first_rela->r_info>>32,
+								first_rela->r_addend
+							);
+							// relacation的offset在此program segement中
+							if(first_rela->r_offset>=p_header->p_offset && first_rela->r_offset<=p_header->p_offset+p_header->p_filesz) {
+								*((int*)(base+first_rela->r_offset)) = base + first_rela->r_addend;
+							}
+						}
+					}
+				}
+			}
+
 			mprotect((void *)aligned_start, len, p_prot);
 		}
 	}
 
 	printf("Executing %s in memory...\n", argv[1]);
-	printf("Jumping to entry point: 0x%016lx\n", file_header->e_entry);
+	printf("Jumping to entry point @ 0x%08lx\n", file_header->e_entry);
 
 	int (*ptr)();
 	ptr = (int (*)())(base+file_header->e_entry);
@@ -412,6 +490,11 @@ int main(int argc, char *argv[])
 
 	free(buf);
 	buf = NULL;
+
+	free(file_header);
+	file_header = NULL;
+	free(phdr_head);
+	phdr_head = NULL;
 
 	return 0;
 }
