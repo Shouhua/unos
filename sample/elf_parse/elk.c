@@ -27,6 +27,15 @@ typedef struct node
 	struct node *next;
 } node_t;
 
+// dynamic information
+typedef struct dyn_info
+{
+	node_t *dyn_head;
+	ulong start_addr;
+	ulong total_size;
+	ulong ent_size;
+} dyn_info_t;
+
 void node_push(node_t *head, void *data)
 {
 	if(head == NULL)
@@ -45,7 +54,9 @@ void node_push(node_t *head, void *data)
 }
 
 node_t *phdr_head;
+dyn_info_t *dyn_info;
 node_t *rela_head;
+
 
 static void _check_version(Elf_Ehdr *header)
 {
@@ -199,18 +210,18 @@ static inline char *get_relo_type(ulong type)
 static void parse_phdr(Elf_Ehdr *header) 
 {
 	phdr_head = (node_t *)malloc(sizeof(node_t));
-	for(int i = 0; i<header->e_phnum; i++)
+	Elf_Phdr *p_header= (Elf_Phdr *)((long)header + header->e_phoff);
+	node_push(phdr_head, p_header);
+	for(int i = 1; i<header->e_phnum; i++)
 	{
-		// 重新分配内存，后面可以关闭buf
 		// Elf_Phdr *p_header = (Elf_Phdr *)malloc(sizeof(Elf_Phdr));
 		// memcpy(p_header, (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize)), sizeof(Elf_Phdr));
-		// NOTE 没有使用malloc
-		Elf_Phdr *p_header= (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize));
+		p_header= (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize));
 		node_push(phdr_head, p_header);
 	}
 	// print program headers
 	printf("New Program Header:\n");
-	node_t * current = phdr_head->next;
+	node_t * current = phdr_head;
 	while(current != NULL)
 	{
 		printf("\tfile 0x%08lx..0x%08lx | mem 0x%08lx..0x%08lx | align 0x%08lx | %s%s%s %s\n",
@@ -225,6 +236,28 @@ static void parse_phdr(Elf_Ehdr *header)
 			   get_program_header_type(((Elf_Phdr*)current->data)->p_type));
 		current = current->next;
 	}
+}
+static void parse_dyn(Elf_Ehdr *header, dyn_info_t *dyn_info) 
+{
+	dyn_info->dyn_head = (node_t *)malloc(sizeof(node_t));
+	node_t * current_program_header = phdr_head;
+	// 通过program headers获取dynamic section
+	while(current_program_header != NULL)
+	{
+		if(((Elf_Phdr*)current_program_header->data)->p_type == PT_DYNAMIC)
+		{
+			dyn_info->start_addr = ((Elf_Phdr*)current_program_header->data)->p_offset;
+			dyn_info->total_size = ((Elf_Phdr*)current_program_header->data)->p_filesz;
+			break;
+		}	
+		current_program_header = current_program_header->next;
+	}
+	// 根据dynamic information填充dynamic tags
+	for(int i=0; i<dyn_info->total_size/dyn_info->ent_size; i++)
+	{
+		
+	}
+
 }
 static void _print_program_header(Elf_Ehdr *header)
 {
@@ -368,8 +401,15 @@ int main(int argc, char *argv[])
 	// parse file header
 	file_header = (Elf_Ehdr *)malloc(sizeof(Elf_Ehdr));
 	memcpy(file_header, buf, sizeof(Elf_Ehdr));
-	
 	// file_header = (Elf_Ehdr *)buf;
+
+	// parse programe headers
+	parse_phdr(buf);
+	
+	dyn_info = (dyn_info_t *)malloc(sizeof(dyn_info_t));
+	dyn_info->ent_size = 16;
+	//parse dynamic tags
+	parse_dyn(buf, dyn_info);
 
 	// 不要传递file_header, 因为file_header大小只有Elf_Ehdr, 没法根据它获取其他信息
 	_parse((Elf_Ehdr *)buf);
