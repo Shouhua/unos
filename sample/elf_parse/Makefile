@@ -43,8 +43,11 @@ CFLAGS := -g -o
 .PHONY: all clean
 all: build_dir $(ASM_BIN) $(C_BIN) $(BIN_DIR)/hello-dl
 
-$(BIN_DIR)/hello-dl: $(OBJ_DIR)/hello-dl.o $(OBJ_DIR)/msg.o
-	ld -pie --dynamic-linker /lib/ld-linux-x86-64.so.2 $^ -o $@
+$(BIN_DIR)/hello-dl: $(OBJ_DIR)/hello-dl.o $(BIN_DIR)/libmsg.so
+	@ld -rpath \$$ORIGIN -pie --dynamic-linker /lib/ld-linux-x86-64.so.2 $^ -o $@
+
+$(BIN_DIR)/libmsg.so: $(OBJ_DIR)/msg.o
+	@ld -shared $< -o $@
 
 $(ASM_BIN): $(BIN_DIR)/%: $(OBJ_DIR)/%.o
 	@ld $(ASM_FLAGS) $< -o $@
