@@ -63,5 +63,8 @@ build_dir:
 run_elk: $(BIN_DIR)/elk $(BIN_DIR)/hello
 	$(BIN_DIR)/elk $(BIN_DIR)/hello
 
+debug: $(BIN_DIR)/elk
+	gdb $(BIN_DIR)/elk
+
 clean:
 	rm -rf $(BUILD_DIR)

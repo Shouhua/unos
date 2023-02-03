@@ -10,6 +10,8 @@
 
 #include <elf.h>
 
+#define RELA_UNIT 24
+
 typedef Elf64_Ehdr Elf_Ehdr;
 typedef Elf64_Phdr Elf_Phdr;
 typedef Elf64_Shdr Elf_Shdr;
@@ -207,23 +209,74 @@ static inline char *get_relo_type(ulong type)
 	}
 }
 
+static void parse_rela(Elf_Ehdr *header)
+{
+	for(int i=0; i< header->e_shnum; i++)
+	{
+		Elf_Shdr * sec_header = (Elf_Shdr*)((ulong)header+header->e_shoff+i*header->e_shentsize);
+		// print relaction info
+		// 只获取一个rela section
+		if(sec_header->sh_type == SHT_RELA) {
+			rela_head = (node_t *)malloc(sizeof(node_t));
+			printf("Rela entries:\n");
+			for(int j=0; j<(sec_header->sh_size/RELA_UNIT); j++)
+			{
+				Elf_Rela *rela = (Elf_Rela *)((ulong)header+sec_header->sh_offset+j*RELA_UNIT);
+				printf("\toffset: 0x%08lx type: %8s sym: %ld addend: 0x%08lx\n",
+					rela->r_offset,
+					get_relo_type(rela->r_info&0xffffffff),
+					rela->r_info>>32,
+					rela->r_addend
+				);
+
+				node_push(rela_head, rela);
+			}
+			break;
+		}
+	}
+}
+
+static void parse_dyn(Elf_Ehdr *header, dyn_info_t *dyn_info) 
+{
+	dyn_info->dyn_head = (node_t *)malloc(sizeof(node_t));
+	// 根据dynamic information填充dynamic tags
+	for(int i=0; i<dyn_info->total_size/dyn_info->ent_size; i++)
+	{
+		Elf64_Dyn* dyn = (Elf64_Dyn*)((ulong)dyn_info->start_addr + dyn_info->ent_size * i);
+		// if(dyn->d_tag == DT_RELA)
+		// {
+		// 	first_rela = (Elf_Rela*)((ulong)header+dyn->d_un.d_val);
+		// }
+		node_push(dyn_info->dyn_head, dyn);
+	}
+}
+
 static void parse_phdr(Elf_Ehdr *header) 
 {
 	phdr_head = (node_t *)malloc(sizeof(node_t));
 	Elf_Phdr *p_header= (Elf_Phdr *)((long)header + header->e_phoff);
-	node_push(phdr_head, p_header);
-	for(int i = 1; i<header->e_phnum; i++)
+	// node_push(phdr_head, p_header);
+	for(int i = 0; i<header->e_phnum; i++)
 	{
-		// Elf_Phdr *p_header = (Elf_Phdr *)malloc(sizeof(Elf_Phdr));
-		// memcpy(p_header, (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize)), sizeof(Elf_Phdr));
-		p_header= (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize));
+		Elf_Phdr *p_header = (Elf_Phdr *)malloc(sizeof(Elf_Phdr));
+		memcpy(p_header, (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize)), sizeof(Elf_Phdr));
+		// p_header= (Elf_Phdr *)((long)header + header->e_phoff + i * (header->e_phentsize));
 		node_push(phdr_head, p_header);
 	}
 	// print program headers
-	printf("New Program Header:\n");
-	node_t * current = phdr_head;
+	printf("Program Header:\n");
+	node_t * current = phdr_head->next;
 	while(current != NULL)
 	{
+		if(((Elf_Phdr*)current->data)->p_type == PT_DYNAMIC) 
+		{
+			dyn_info = (dyn_info_t *)malloc(sizeof(dyn_info_t));
+			dyn_info->ent_size = 16;
+			dyn_info->start_addr = (ulong)header+((Elf_Phdr*)current->data)->p_offset;
+			dyn_info->total_size = ((Elf_Phdr*)current->data)->p_filesz;
+			//parse dynamic tags
+			parse_dyn(header, dyn_info);
+		}
 		printf("\tfile 0x%08lx..0x%08lx | mem 0x%08lx..0x%08lx | align 0x%08lx | %s%s%s %s\n",
 			   ((Elf_Phdr*)(current->data))->p_offset,
 			   ((Elf_Phdr*)current->data)->p_offset + ((Elf_Phdr*)current->data)->p_filesz,
@@ -236,28 +289,16 @@ static void parse_phdr(Elf_Ehdr *header)
 			   get_program_header_type(((Elf_Phdr*)current->data)->p_type));
 		current = current->next;
 	}
-}
-static void parse_dyn(Elf_Ehdr *header, dyn_info_t *dyn_info) 
-{
-	dyn_info->dyn_head = (node_t *)malloc(sizeof(node_t));
-	node_t * current_program_header = phdr_head;
-	// 通过program headers获取dynamic section
-	while(current_program_header != NULL)
+	if(dyn_info && dyn_info->dyn_head->next)
 	{
-		if(((Elf_Phdr*)current_program_header->data)->p_type == PT_DYNAMIC)
+		printf("Dynamic entries:\n");
+		node_t *current_dyn = dyn_info->dyn_head->next;	
+		while(current_dyn != NULL)
 		{
-			dyn_info->start_addr = ((Elf_Phdr*)current_program_header->data)->p_offset;
-			dyn_info->total_size = ((Elf_Phdr*)current_program_header->data)->p_filesz;
-			break;
-		}	
-		current_program_header = current_program_header->next;
+			printf("\ttag: %-10s addr: 0x%08lx\n", get_dynamic_tag(((Elf_Dyn*)(current_dyn->data))->d_tag), ((Elf_Dyn*)(current_dyn->data))->d_un.d_val);
+			current_dyn = current_dyn->next;
+		}
 	}
-	// 根据dynamic information填充dynamic tags
-	for(int i=0; i<dyn_info->total_size/dyn_info->ent_size; i++)
-	{
-		
-	}
-
 }
 static void _print_program_header(Elf_Ehdr *header)
 {
@@ -302,7 +343,11 @@ static void _parse(Elf_Ehdr *header)
 	_print_type(header);
 	_print_machine(header);
 	printf("entry_point: 0x%lx\n", header->e_entry);
-	_print_program_header(header);
+	// parse programe headers
+	// 注意这个buf，暂时不能为file_header，尽管他们具有相同内容，但是函数里面需要使用buf的真实起始地址+offset，如果使用file_header，造成内存问题
+	parse_phdr(header);
+	parse_rela(header);
+	// _print_program_header(header);
 }
 
 // return elf program return value
@@ -403,13 +448,7 @@ int main(int argc, char *argv[])
 	memcpy(file_header, buf, sizeof(Elf_Ehdr));
 	// file_header = (Elf_Ehdr *)buf;
 
-	// parse programe headers
-	parse_phdr(buf);
 	
-	dyn_info = (dyn_info_t *)malloc(sizeof(dyn_info_t));
-	dyn_info->ent_size = 16;
-	//parse dynamic tags
-	parse_dyn(buf, dyn_info);
 
 	// 不要传递file_header, 因为file_header大小只有Elf_Ehdr, 没法根据它获取其他信息
 	_parse((Elf_Ehdr *)buf);
@@ -448,25 +487,26 @@ int main(int argc, char *argv[])
 	unsigned int base = 0x400000;
 	for (int i = 0; i < file_header->e_phnum; i++)
 	{
-		Elf_Phdr *p_header = (Elf_Phdr *)((long)file_header + file_header->e_phoff + i * (file_header->e_phentsize));
+		Elf_Phdr *p_header = (Elf_Phdr *)((long)buf + file_header->e_phoff + i * (file_header->e_phentsize));
 		if (p_header->p_type == PT_LOAD && p_header->p_memsz > 0)
 		{
 			ulong start = base + p_header->p_vaddr;
+			// TODO 是否需要使用p_header->p_align
 			ulong aligned_start = start & ~0xFFF;
 			ulong padding = start - aligned_start;
 			ulong end = base + p_header->p_vaddr + p_header->p_memsz;
 			ulong len = p_header->p_memsz + padding;
-			printf("Mapping segement @ 0x%08lx - 0x%08lx with 0x%x\n",
+			printf("\tMapping segement @ 0x%08lx - 0x%08lx with 0x%x\n",
 				   start, end, p_header->p_flags);
-			printf("Addr: 0x%016lx, Padding: 0x%08lx\n", aligned_start, padding);
+			printf("\tAddr: 0x%016lx, Padding: 0x%08lx\n", aligned_start, padding);
 			if (mmap((void *)aligned_start, len, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0) == MAP_FAILED)
 			{
 				fprintf(stderr, "mmap failed: %d\n", errno);
 				exit(EXIT_FAILURE);
 			}
-			printf("Copying segment data...\n");
+			printf("\tCopying segment data...\n");
 			memcpy((void *)start, (void *)(buf + p_header->p_offset), p_header->p_memsz);
-			printf("Adjusting permissions...\n");
+			printf("\tAdjusting permissions...\n");
 			int p_prot = PROT_NONE;
 			if (p_header->p_flags & 0x0004)
 			{
@@ -481,34 +521,28 @@ int main(int argc, char *argv[])
 				p_prot |= PROT_EXEC;
 			}
 
-			// TODO 效率低下，没有存储elf的header，program header，section等信息
-			if(first_rela) 
+			if(rela_head)
 			{
-				ulong rela_unit = 24; // 64位下rela item大小为24
-				for(int i=0; i< file_header->e_shnum; i++)
+				int num_relocs = 0;
+				node_t * rela_node = rela_head->next;
+				while(rela_node)
 				{
-					Elf_Shdr * sec_header = (Elf_Shdr*)((ulong)file_header+file_header->e_shoff+i*file_header->e_shentsize);
-					// print relaction info
-					if(sec_header->sh_type == SHT_RELA) {
-						printf("Rela entries:\n");
-						for(int j=0; j<(sec_header->sh_size/rela_unit); j++)
-						{
-							printf("\toffset: 0x%08lx type: %8s sym: %ld addend: 0x%08lx\n",
-								first_rela->r_offset,
-								get_relo_type(first_rela->r_info&0xffffffff),
-								first_rela->r_info>>32,
-								first_rela->r_addend
-							);
-							// relacation的offset在此program segement中
-							if(first_rela->r_offset>=p_header->p_offset && first_rela->r_offset<=p_header->p_offset+p_header->p_filesz) {
-								*((int*)(base+first_rela->r_offset)) = base + first_rela->r_addend;
-							}
-						}
+					Elf_Rela *rela = rela_node->data;
+					if(rela->r_offset>=p_header->p_offset && rela->r_offset<=p_header->p_offset+p_header->p_filesz) 
+					{
+						num_relocs += 1;
+						// TODO 这里只是考虑了RELATIVE情况的改写
+						*((int*)(base+rela->r_offset)) = base + rela->r_addend;
 					}
+					rela_node = rela_node->next;
+				}
+				if(num_relocs > 0)
+				{
+					printf("\tApplied %d relocations\n", num_relocs);
 				}
 			}
-
 			mprotect((void *)aligned_start, len, p_prot);
+			printf("\n");
 		}
 	}
 
@@ -536,5 +570,6 @@ int main(int argc, char *argv[])
 	free(phdr_head);
 	phdr_head = NULL;
 
+	close(exec_fd);
 	return 0;
 }
