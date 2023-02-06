@@ -1,3 +1,21 @@
+/*
+TODO: 
+2022-02-06 依赖库解析，hello-dl依赖libmsg.so
+1. 检索依赖项, 搜索依赖使用广度优先检索(breadth-first search)
+DT_RUNPATH: $ORIGIN
+DT_NEEDED: build/bin/libmsg.so
+2. 解析relocation，广度优先的反向顺序, [libmsg, hello-dl]
+主要是解析2类relocation：
+DIRECT64: 
+**注意检索symbol的时候使用广度优先的顺序，比如[hello-dl, libmsg], 这是msg先出现在hello-dl中，使用hello-dl的base addr**
+hello-dl symbol table：msg 3000
+hello-dl relocation：msg：offset 1007, symtable 1, addon 0
+hello-dl base addr + 1007 = hello-dl base addr + 3000 + addon
+COPY:
+libmsg: symbol table: msg 2000 size 9
+检索除去自己(hello-dl)之外的其他模块，找到msg，发现在libmsg的.dynsym中有
+memcpy(*(hello-dl base addr + 1007), libmsg base addr + 2000, 9)
+*/
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

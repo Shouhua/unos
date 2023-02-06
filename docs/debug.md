@@ -122,6 +122,9 @@ man -k "^printf$"
 3: library calls
 
 strace
+```shell
+strace -e trace=mmap,munmap build/bin/elk build/bin/hello-dl
+```
 lstrace
 ldd test
 pidof sth
