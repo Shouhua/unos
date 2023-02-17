@@ -30,7 +30,9 @@ QEMU_MONITOR_TELNET_CONFIG := -monitor telnet::$(QEMU_MONITOR_PORT),server,nowai
 QEMU_MONITOR_UNIX_SOCKET_CONFIG := -chardev socket,path=/tmp/qemu-monitor-socket,server=on,wait=off,id=qms0 -monitor chardev:qms0 -daemonize
 QEMU_DEBUG_CONFIG := $(QEMU_CONFIG) $(QEMU_GDB_CONFIG) $(QEMU_MONITOR_UNIX_SOCKET_CONFIG)
 
+# 没办法，两台机器使用不同的linux发行版本，不同的GUI
 ifeq ($(shell lsb_release -si), Ubuntu)
+# cross compiler
 	CC := i686-elf-gcc
 	TERMINAL := gnome-terminal
 	TERMINAL_QEMU_TELNET_MONITOR_OPTIONS := -- telnet 127.0.0.1 $(QEMU_MONITOR_PORT)
