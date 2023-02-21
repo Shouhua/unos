@@ -26,6 +26,11 @@
 		"streambuf": "c",
 		"elf.h": "c",
 		"loader.h": "c",
-		"mman.h": "c"
+		"mman.h": "c",
+		"deque": "c",
+		"list": "c",
+		"string": "c",
+		"unordered_map": "c",
+		"vector": "c"
 	}
 }
