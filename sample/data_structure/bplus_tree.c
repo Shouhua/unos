@@ -1,8 +1,9 @@
 /**
- * 1. root至少有2个children
+ * 1. root至少有2个children, [2, m]
  * 2. 除了root外的node的children个数为[m/2, m]
- * 3. 每个node能包含的keys个数[m/2-1, m-1]
+ * 3. 每个node能包含的keys个数是[ceil(m/2-1),m-1]
  * 4. 从下往上寻找自平衡
+ * 5. 分裂点m/2取整，比如5则分裂index从0开始的2，即第三个
  * 其中m为m-way search tree的m，也叫做阶数(order), degree等
  * b+ tree相对于b tree最大变化是所有内部节点都在叶子节点显示，并且所有叶子节点都连接在一起
  */
@@ -15,6 +16,15 @@
 #include <string.h>
 
 #define DEFAULT_ORDER 3
+/*
+官方的ceil必须要添加 #include <math.h>依赖，如果是两个int求ceil需要写成如下:
+int z = (int)ceil((double)x/y);
+因为ceil原型为：double ceil(double x); 需要添加double强制转化，不然x/y就强制取整，结果不正确
+*/
+#define CEIL_INLINE(numerator, denominator) ((numerator)/(denominator)+((numerator)%(denominator)!=0))
+// a >=0
+#define ROUNDING_POSITIVE(a) (int)(a+0.5)
+#define ROUNDING_NEGATIVE(a) (int)(a-0.5)
 
 typedef struct record
 {
