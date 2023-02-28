@@ -1,9 +1,10 @@
 /**
+ * https://developer.aliyun.com/article/983989
  * 1. root至少有2个children, [2, m]
- * 2. 除了root外的node的children个数为[m/2, m]
- * 3. 每个node能包含的keys个数是[ceil(m/2-1),m-1]
+ * 2. 除了root外的node的children个数为[ceil(m/2), m]
+ * 3. 每个node能包含的keys个数是[ceil(m/2)-1,m-1]
  * 4. 从下往上寻找自平衡
- * 5. 分裂点m/2取整，比如5则分裂index从0开始的2，即第三个
+ * 5. 分裂点m/2取整，比如order为5，结果为2，则分裂index从0开始的2，即第三个, 下面代码整复杂了
  * 其中m为m-way search tree的m，也叫做阶数(order), degree等
  * b+ tree相对于b tree最大变化是所有内部节点都在叶子节点显示，并且所有叶子节点都连接在一起
  */
@@ -342,7 +343,7 @@ record *find(node *root, int key, bool verbose, node **leaf_out)
     {
         *leaf_out = leaf;
     }
-    if (i == leaf->num_keys)
+    if (i == leaf->num_keys) // leaf keys最大容量为m-1
         return NULL;
     else
         return (record *)leaf->pointers[i];
@@ -386,7 +387,7 @@ node *make_node(void)
         perror("New node keys array.");
         exit(EXIT_FAILURE);
     }
-    new_node->pointers = malloc(order * sizeof(void *));
+    new_node->pointers = malloc(order * sizeof(void *));// 刚好leaf node可以使用最后一个指向下一个leaf node
     if (new_node->pointers == NULL)
     {
         perror("New node pointers array.");
@@ -406,6 +407,7 @@ node *make_leaf(void)
     return leaf;
 }
 
+// 有可能没有，返回数据就大于num_keys
 int get_left_index(node *parent, node *left)
 {
     int left_index = 0;
@@ -474,6 +476,7 @@ node *insert_into_leaf_after_splitting(node *root, node *leaf, int key, record *
 
     leaf->num_keys = 0;
 
+    // 找到分裂点
     split = cut(order - 1);
 
     for (i = 0; i < split; i++)
@@ -493,6 +496,8 @@ node *insert_into_leaf_after_splitting(node *root, node *leaf, int key, record *
     free(temp_pointers);
     free(temp_keys);
 
+    // TODO 指向下一个，为什么没有使用next属性, next属性用于打印 
+    // 叶子节点使用pointers[order-1]存储下一个leaf node，因为叶子节点最有有order-1个record
     new_leaf->pointers[order - 1] = leaf->pointers[order - 1];
     leaf->pointers[order - 1] = new_leaf;
 
@@ -504,6 +509,7 @@ node *insert_into_leaf_after_splitting(node *root, node *leaf, int key, record *
     new_leaf->parent = leaf->parent;
     new_key = new_leaf->keys[0];
 
+    // 将new_key推向父node
     return insert_into_parent(root, leaf, new_key, new_leaf);
 }
 
@@ -512,6 +518,7 @@ node *insert_into_node(node *root, node *n,
 {
     int i;
 
+    // 这里没有毛病，应为要腾出新空间装 
     for (i = n->num_keys; i > left_index; i--)
     {
         n->pointers[i + 1] = n->pointers[i];
@@ -546,6 +553,7 @@ node *insert_into_node_after_splitting(node *root, node *old_node, int left_inde
 
     for (i = 0, j = 0; i < old_node->num_keys + 1; i++, j++)
     {
+        // left_index可以认为是插入点，但是pointers指向新的节点是left_index+1
         if (j == left_index + 1)
             j++;
         temp_pointers[j] = old_node->pointers[i];
@@ -571,7 +579,10 @@ node *insert_into_node_after_splitting(node *root, node *old_node, int left_inde
         old_node->num_keys++;
     }
     old_node->pointers[i] = temp_pointers[i];
-    k_prime = temp_keys[split - 1];
+    // 这个节点即将上去parent中去，old_node,new_node都不会包含,其中k_prime左边指针给old_node,右边指针成为右边node左指针
+    // 这个需要手动操作一遍清晰 
+    // NOTE 这个是和leaf节点提升到node不同的地方
+    k_prime = temp_keys[split - 1]; 
     for (++i, j = 0; i < order; i++, j++)
     {
         new_node->pointers[j] = temp_pointers[i];
@@ -582,6 +593,7 @@ node *insert_into_node_after_splitting(node *root, node *old_node, int left_inde
     free(temp_pointers);
     free(temp_keys);
     new_node->parent = old_node->parent;
+    // 更新node的父节点指针
     for (i = 0; i <= new_node->num_keys; i++)
     {
         child = new_node->pointers[i];
@@ -603,6 +615,7 @@ node *insert_into_parent(node *root, node *left, int key, node *right)
 
     left_index = get_left_index(parent, left);
 
+    // 一样的套路，如果能容下就接纳，不然再分裂继续向上迭代
     if (parent->num_keys < order - 1)
         return insert_into_node(root, parent, left_index, key, right);
 
@@ -633,6 +646,7 @@ node *start_new_tree(int key, record *pointer)
     return root;
 }
 
+// 插入或者更新，目前不支持duplicate key
 node *insert(node *root, int key, int value)
 {
     record *record_pointer = NULL;
@@ -652,12 +666,13 @@ node *insert(node *root, int key, int value)
 
     leaf = find_leaf(root, key, false);
 
-    if (leaf->num_keys < order - 1)
+    if (leaf->num_keys < order - 1) // 如果小于m-1,有足够空间直接插入
     {
         leaf = insert_into_leaf(leaf, key, record_pointer);
         return root;
     }
 
+    // 空间不够，需要先插入，然后分裂, 可能会引起父级以上继续合并分裂操作
     return insert_into_leaf_after_splitting(root, leaf, key, record_pointer);
 }
 
@@ -729,13 +744,14 @@ node *coalesce_nodes(node *root, node *n, node *neighbor, int neighbor_index, in
     int i, j, neighbor_insertion_index, n_end;
     node *tmp;
 
-    if (neighbor_index == -1)
+    if (neighbor_index == -1) // TODO 如果是选择右邻则互换?
     {
         tmp = n;
         n = neighbor;
         neighbor = tmp;
     }
 
+    // neighbor node永远是小值，排在最左边，因为上面已经做了调换了，如果是右邻的话 
     neighbor_insertion_index = neighbor->num_keys;
 
     if (!n->is_leaf)
@@ -745,6 +761,7 @@ node *coalesce_nodes(node *root, node *n, node *neighbor, int neighbor_index, in
 
         n_end = n->num_keys;
 
+        // 将右边的移到左边node中
         for (i = neighbor_insertion_index + 1, j = 0; j < n_end; i++, j++)
         {
             neighbor->keys[i] = n->keys[j];
@@ -761,7 +778,6 @@ node *coalesce_nodes(node *root, node *n, node *neighbor, int neighbor_index, in
             tmp->parent = neighbor;
         }
     }
-
     else
     {
         for (i = neighbor_insertion_index, j = 0; j < n->num_keys; i++, j++)
@@ -780,6 +796,7 @@ node *coalesce_nodes(node *root, node *n, node *neighbor, int neighbor_index, in
     return root;
 }
 
+// redistribute就是从sibling中借一个过来使自己满足node最小key个数限制
 node *redistribute_nodes(node *root, node *n, node *neighbor, int neighbor_index,
                          int k_prime_index, int k_prime)
 {
@@ -812,7 +829,6 @@ node *redistribute_nodes(node *root, node *n, node *neighbor, int neighbor_index
             n->parent->keys[k_prime_index] = n->keys[0];
         }
     }
-
     else
     {
         if (n->is_leaf)
@@ -862,14 +878,15 @@ node *delete_entry(node *root, node *n, int key, void *pointer)
     if (n->num_keys >= min_keys)
         return root;
 
-    neighbor_index = get_neighbor_index(n); // 找到左邻
-    k_prime_index = neighbor_index == -1 ? 0 : neighbor_index;
+    neighbor_index = get_neighbor_index(n); // 找到相同父节点的left sibling
+    k_prime_index = neighbor_index == -1 ? 0 : neighbor_index; // 如果自己位于最左侧，0
     k_prime = n->parent->keys[k_prime_index];
-    neighbor = neighbor_index == -1 ? n->parent->pointers[1] : n->parent->pointers[neighbor_index];
+    //如果没有左邻，选择右邻
+    neighbor = neighbor_index == -1 ? n->parent->pointers[1] : n->parent->pointers[neighbor_index]; 
 
     capacity = n->is_leaf ? order : order - 1;
 
-    if (neighbor->num_keys + n->num_keys < capacity)
+    if (neighbor->num_keys + n->num_keys < capacity) // TODO 最大不应该都是order-1吗？
         return coalesce_nodes(root, n, neighbor, neighbor_index, k_prime);
     else
         return redistribute_nodes(root, n, neighbor, neighbor_index, k_prime_index, k_prime);
