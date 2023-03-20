@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 set -ueo pipefail
 
+# string expansion
 GREETING=""
 
 if [ -z $GREETING ]; then echo "$GREETING is NULL"; else echo "$GREETING is not NULL"; fi;
@@ -60,6 +61,9 @@ set_double_dash 1 2 3
 # 如果返回0表示成功，!0表示failure
 # 其他表示failure，!1表示successful
 # https://unix.stackexchange.com/questions/437812/what-does-typing-a-single-exclamation-mark-do-in-bash
+# ! 1，！默认是历史命令的展开，所以使用！加数字要注意，以下例子中_mysql_want_help函数使用数字返回值没有问题，这里是要解释这个现象
+# ! true; echo "! true is $?"
+# ! 1; echo "! true is $?"
 # NOTICE
 # set -e 函数返回非0值表示有问题，如果单行调用函数，会退出程序；但是可以在if语句中判断，就像这个例子调用函数判断一样，程序可以继续执行
 # 如果没有set -e出现问题还是可以继续执行下去
@@ -77,10 +81,10 @@ _mysql_want_help() {
 
 if ! _mysql_want_help "mysqld"; then
     echo $?
-    echo "Have help info"
+    echo "Need help info"
 else
     echo $?
-    echo "No help info"
+    echo "Dont Need help info"
 fi
 
 _arg_demo() {
@@ -91,3 +95,11 @@ _arg_demo() {
     done
 }
 _arg_demo "helo" "world"
+
+# array
+PROJ="proj1"
+declare -A test=(
+    ["proj1"]=${BRANCH:-"dev"}
+)
+
+echo "${test[${PROJ}]}" # dev

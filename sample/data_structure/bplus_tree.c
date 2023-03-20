@@ -7,6 +7,10 @@
  * 5. 分裂点m/2取整，比如order为5，结果为2，则分裂index从0开始的2，即第三个, 下面代码整复杂了
  * 其中m为m-way search tree的m，也叫做阶数(order), degree等
  * b+ tree相对于b tree最大变化是所有内部节点都在叶子节点显示，并且所有叶子节点都连接在一起
+ * 
+ * demo
+ * 22,32,21,11,8,26,43
+ * delete 22, 32, 21, 11, 8, 26,43
  */
 
 // Deletion operation on a B+ Tree in C++
@@ -728,7 +732,6 @@ node *adjust_root(node *root)
         new_root = root->pointers[0];
         new_root->parent = NULL;
     }
-
     else
         new_root = NULL;
 
@@ -797,6 +800,8 @@ node *coalesce_nodes(node *root, node *n, node *neighbor, int neighbor_index, in
 }
 
 // redistribute就是从sibling中借一个过来使自己满足node最小key个数限制
+// 主要要考虑借过来后，指针指向，以及父节点中的变化
+// 如果是右邻的话，还要考虑
 node *redistribute_nodes(node *root, node *n, node *neighbor, int neighbor_index,
                          int k_prime_index, int k_prime)
 {
@@ -805,6 +810,7 @@ node *redistribute_nodes(node *root, node *n, node *neighbor, int neighbor_index
 
     if (neighbor_index != -1)
     {
+        // 如果是node，需要挪下最后的指针
         if (!n->is_leaf)
             n->pointers[n->num_keys + 1] = n->pointers[n->num_keys];
         for (i = n->num_keys; i > 0; i--)
@@ -868,6 +874,7 @@ node *delete_entry(node *root, node *n, int key, void *pointer)
     int k_prime_index, k_prime;
     int capacity;
 
+    // 先删除node中的key, 再调整node中的keys和pointers
     n = remove_entry_from_node(n, key, pointer);
 
     if (n == root)
@@ -875,6 +882,7 @@ node *delete_entry(node *root, node *n, int key, void *pointer)
 
     min_keys = n->is_leaf ? cut(order - 1) : cut(order) - 1;
 
+    // TODO 如果root中也有这个key怎么删除的呢？
     if (n->num_keys >= min_keys)
         return root;
 
@@ -886,7 +894,7 @@ node *delete_entry(node *root, node *n, int key, void *pointer)
 
     capacity = n->is_leaf ? order : order - 1;
 
-    if (neighbor->num_keys + n->num_keys < capacity) // TODO 最大不应该都是order-1吗？
+    if (neighbor->num_keys + n->num_keys < capacity) // TODO 最大不应该都是order-1吗？为什么internal node会少
         return coalesce_nodes(root, n, neighbor, neighbor_index, k_prime);
     else
         return redistribute_nodes(root, n, neighbor, neighbor_index, k_prime_index, k_prime);
@@ -942,7 +950,7 @@ int main()
 
     print_tree(root);
 
-    root = delete(root, 5);
+    root = delete(root, 25);
 
     print_tree(root);
 }

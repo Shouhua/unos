@@ -28,8 +28,20 @@ typedef struct node
 	void **pointers;
 	node *parent;
 } node;
-// insert
 ```
+//delete
+场景：
+1. leaf_node.key_num>ceil(order/2)-1, key只在leaf node中, 直接干掉
+2. leaf_node.key_num>ceil(order/2)-1, key还存在internal node（包括root）
+3. leaf_node.key_num == 0，最复杂
+2. leaf_node.key_num<ceil(order/2)-1, redistrubte from left sibling
+
+1. 找到leaf node
+2. 如果leaf node == root，删除key，调整pointers
+3. 如果不是root，但是删除后leaf node的key_num>=ceil(order>m/2)-1, 删除key，调整pointers，另外搜寻interanl node含有key的node，替换key为leaf_node.keys[0]
+4. 
+
+// insert
 node *make_node()
 	node = malloc(sizeof(node))
 	node->is_leaf = false
